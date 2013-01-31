@@ -12,12 +12,13 @@ Compare DNS logs against known mal-ware host list
       Options
         -p      PassiveDNS log file
         -b      BRO-IDS dns.log file
+	-h      HttPry log file
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
         -l      Log stdout & stderr to file
 
-Usage: $0 [option] [dnslog]
-e.g. $0 -p /var/log/pdns.log -l output.txt
+Usage: $0 [option] logfile [-w whitelist] [-l output.log]
+e.g. $0 -p /var/log/pdns.log -w "facebook|google" -l output.log
 EOF
 }
 
@@ -64,7 +65,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "hp:b:w:l:" OPTION
+while getopts "hp:b:t:w:l:" OPTION
 do
      case $OPTION in
          h)
@@ -79,6 +80,10 @@ do
              BRO=1
              FILE=$OPTARG
              ;;
+	 t)
+	     HTTPRY=1
+             FILE=$OPTARG
+	     ;;
          w)
              WLISTDOM="$OPTARG"
              ;;
@@ -112,10 +117,10 @@ fi
 # meat
 if [ "$BRO" == 1 ]; then
 compare "bro-cut query < \$FILE | $(eval wlistchk) | sort | uniq"
-elif [ "$PDNS" == 1 ]; then
+fi
+if [ "$PDNS" == 1 ]; then
 compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | sort | uniq"
-else
-echo "Something isn't right!"
-usage
-exit 1
+fi
+if [ "$HTTPRY" == 1 ]; then
+compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
