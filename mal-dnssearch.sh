@@ -10,9 +10,10 @@ cat <<EOF
 
 Compare DNS logs against known mal-ware host list
       Options
+	-h      help (this)
         -p      PassiveDNS log file
         -b      BRO-IDS dns.log file
-	-h      HttPry log file
+	-t      HttPry log file
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
         -l      Log stdout & stderr to file
