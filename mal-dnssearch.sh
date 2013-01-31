@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# print stats on keypress ^\
-trap "stats" SIGQUIT
+# print stats: kill -USR2 $pid
+trap "stats" SIGUSR2
 
 # functions
 usage()
@@ -92,6 +92,8 @@ do
      esac
 done
 
+echo -e "\nPID: $$"
+
 # d/l malhost list
 curl -O https://secure.mayhemiclabs.com/malhosts/malhosts.txt &>/dev/null
 
@@ -107,7 +109,7 @@ exec > >(tee "$LOGFILE") 2>&1
 echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
-# Meat
+# meat
 if [ "$BRO" == 1 ]; then
 compare "bro-cut query < \$FILE | $(eval wlistchk) | sort | uniq"
 elif [ "$PDNS" == 1 ]; then
