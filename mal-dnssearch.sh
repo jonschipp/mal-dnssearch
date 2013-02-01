@@ -10,14 +10,15 @@ cat <<EOF
 
 Compare DNS logs against known mal-ware host list
       Options
-	-h      help (this)
-        -p      PassiveDNS log file
         -b      BRO-IDS dns.log file
-	-t      HttPry log file
+        -d      Tcpdump pcap file
+	-h      help (this)
+        -l      Log stdout & stderr to file
+        -p      PassiveDNS log file
 	-s      Tshark pcap file
+	-t      HttPry log file
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
-        -l      Log stdout & stderr to file
 
 Usage: $0 [option] logfile [-w whitelist] [-l output.log]
 e.g. $0 -p /var/log/pdns.log -w "facebook|google" -l output.log
@@ -67,35 +68,39 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "hp:b:t:s:w:l:" OPTION
+while getopts "hb:d:l:p:s:t:w:" OPTION
 do
      case $OPTION in
+         b)
+             BRO=1
+             FILE="$OPTARG"
+             ;;
+	 d) 
+             TCPDUMP=1
+             FILE="$OPTARG"
+             ;;
          h)
              usage
              exit 1
+             ;;
+         l)
+             LOG=1
+             LOGFILE="$OPTARG"
              ;;
          p)
              PDNS=1
              FILE="$OPTARG"
              ;;
-         b)
-             BRO=1
-             FILE="$OPTARG"
-             ;;
-	 t)
-	     HTTPRY=1
-             FILE="$OPTARG"
-	     ;;
 	 s) 
     	     TSHARK=1
   	     FILE="$OPTARG"
 	     ;;
+	 t)
+	     HTTPRY=1
+             FILE="$OPTARG"
+	     ;;
          w)
              WLISTDOM="$OPTARG"
-             ;;
-         l)
-             LOG=1
-             LOGFILE="$OPTARG"
              ;;
          \?)
              exit 1
@@ -131,6 +136,10 @@ if [ "$HTTPRY" == 1 ]; then
 compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
 if [ "$TSHARK" == 1 ]; then
-compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null | $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
+compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
+| $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
 fi
-
+if [ "$TCPDUMP" == 1 ]; then
+compare "tcpdump -nnr \$FILE port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
+ | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
+fi
