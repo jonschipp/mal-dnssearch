@@ -10,6 +10,7 @@ cat <<EOF
 
 Compare DNS logs against known mal-ware host list
       Options
+	-a 	ARGUS file
         -b      BRO-IDS dns.log file
         -d      Tcpdump pcap file
 	-h      help (this)
@@ -33,11 +34,11 @@ echo " --> [-] stats: found: ${found}, current mal item: $tally of $total"
 wlistchk()
 {
 if [ -z $WLISTDOM ]; then
-echo "grep -v -E '(in-addr|\_)'"
+echo "grep -v -i -E '(in-addr|\_)'"
 elif [ -f $WLISTDOM ]; then
-echo "grep -v -f $WLISTDOM"
+echo "grep -v -i -f $WLISTDOM"
 else
-echo "grep -v -E '(in-addr|$WLISTDOM)'"
+echo "grep -v -i -E '(in-addr|$WLISTDOM)'"
 fi
 }
 
@@ -71,6 +72,10 @@ fi
 while getopts "hb:d:l:p:s:t:w:" OPTION
 do
      case $OPTION in
+	 a)
+	     ARGUS=1
+	     FILE="$OPTARG"
+	     ;;
          b)
              BRO=1
              FILE="$OPTARG"
@@ -142,4 +147,8 @@ fi
 if [ "$TCPDUMP" == 1 ]; then
 compare "tcpdump -nnr \$FILE port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
  | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
+fi
+if [ "$ARGUS" == 1 ]; then
+compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
+sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | sort | uniq"
 fi
