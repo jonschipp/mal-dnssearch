@@ -14,6 +14,7 @@ Compare DNS logs against known mal-ware host list
         -p      PassiveDNS log file
         -b      BRO-IDS dns.log file
 	-t      HttPry log file
+	-s      Tshark pcap file
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
         -l      Log stdout & stderr to file
@@ -66,7 +67,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "hp:b:t:w:l:" OPTION
+while getopts "hp:b:t:s:w:l:" OPTION
 do
      case $OPTION in
          h)
@@ -75,22 +76,26 @@ do
              ;;
          p)
              PDNS=1
-             FILE=$OPTARG
+             FILE="$OPTARG"
              ;;
          b)
              BRO=1
-             FILE=$OPTARG
+             FILE="$OPTARG"
              ;;
 	 t)
 	     HTTPRY=1
-             FILE=$OPTARG
+             FILE="$OPTARG"
+	     ;;
+	 s) 
+    	     TSHARK=1
+  	     FILE="$OPTARG"
 	     ;;
          w)
              WLISTDOM="$OPTARG"
              ;;
          l)
              LOG=1
-             LOGFILE=$OPTARG
+             LOGFILE="$OPTARG"
              ;;
          \?)
              exit 1
@@ -125,3 +130,7 @@ fi
 if [ "$HTTPRY" == 1 ]; then
 compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
+if [ "$TSHARK" == 1 ]; then
+compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null | $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
+fi
+
