@@ -14,8 +14,10 @@ Compare DNS logs against known mal-ware host list
         -b      BRO-IDS dns.log file
         -d      Tcpdump pcap file
 	-h      help (this)
+	-i	ISC's BIND query log file 
         -l      Log stdout & stderr to file
         -p      PassiveDNS log file
+	-o      SonicWall NSA log file
 	-s      Tshark pcap file
 	-t      HttPry log file
         -w      Whitelist, accept file or argument
@@ -69,7 +71,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "hb:d:l:p:s:t:w:" OPTION
+while getopts "hb:d:i:l:p:o:s:t:w:" OPTION
 do
      case $OPTION in
 	 a)
@@ -88,6 +90,10 @@ do
              usage
              exit 1
              ;;
+	 i) 
+	     BIND=1
+	     FILE="$OPTARG"
+	     ;; 
          l)
              LOG=1
              LOGFILE="$OPTARG"
@@ -96,6 +102,10 @@ do
              PDNS=1
              FILE="$OPTARG"
              ;;
+	 o) 
+	     SWALL=1
+	     FILE="$OPTARG"
+	     ;;
 	 s) 
     	     TSHARK=1
   	     FILE="$OPTARG"
@@ -145,10 +155,18 @@ compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null
 | $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
 fi
 if [ "$TCPDUMP" == 1 ]; then
-compare "tcpdump -nnr \$FILE port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
+compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
  | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
 fi
 if [ "$ARGUS" == 1 ]; then
 compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | sort | uniq"
 fi
+if [ "$BIND" == 1 ]; then
+compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \ 
+| grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | sort | uniq"
+fi 
+if [ "$SWALL" == 1 ]; then
+compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
+| sed -e 's/dstname=//' -e 's/ a.*//' | sort | uniq"
+fi 
