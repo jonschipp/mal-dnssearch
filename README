@@ -1,0 +1,42 @@
+mal-dnssearch
+
+Compare log files with DNS names against a updated and compiled malhost list. 
+Downloads daily malhosts list and compares each entry to log file entries. 
+
+SUPPORTED LOGS: 
+
+ARGUS - file, requires user data i.e.
+BRO-IDS - dns.log file
+HTTPRY - log file
+ISC BIND - query log file
+PassiveDNS - log file
+SonicWall NSA - remote syslog log file
+TCPDUMP - PCAP file
+TSHARK - PCAP file
+
+TODO: 
+1. Add iptables, PF, and IPFW support to block matches
+2. Allow multiple log files and types to be specified at once
+3. Add/fix counters
+4. More efficient parsing
+5. Rewrite script in Python
+6. Add more log support (e-mail me with request and log sample)
+7. Read in alternative lists e.g. Emerging Threats, CIArmy, DShield 
+
+USAGE:
+
+Non-mandatory options:
+-w accept file with one entry per line or grep regex e.g. -w "dont|match|these", -w whitelist.txt
+-l Log stdout & stderr to file  e.g. -l /var/log/output.log
+
+Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log]
+
+EXAMPLES:
+
+./mal-dnssearch.sh -s traffic.pcap
+./mal-dnssearch.sh -p /var/log/passivedns/dmz.log -w white.list
+./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -w "company.com|abc.com|google|facebook" -l dns.results.log
+
+MORE INFO: https://sickbits.net/finding-malware-by-dns-cache-snooping/
+AUTHOR: Jon Schipp (keisterstash)
+E-MAIL: jonschipp [ at ] Gmail dot com
