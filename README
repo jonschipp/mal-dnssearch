@@ -1,6 +1,6 @@
 mal-dnssearch
 
-Compare log files with DNS names against a updated and compiled malhost list. 
+Compare log files with DNS names against an updated and compiled malhost list. 
 Downloads daily malhosts list and compares each entry to log file entries. 
 
 SUPPORTED LOGS: 
