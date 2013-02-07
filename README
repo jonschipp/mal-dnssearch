@@ -5,7 +5,7 @@ Downloads daily malhosts list and compares each entry to log file entries.
 
 SUPPORTED LOGS: 
 
-ARGUS - file, requires user data i.e.
+ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
 BRO-IDS - dns.log file
 HTTPRY - log file
 ISC BIND - query log file
@@ -14,9 +14,9 @@ SonicWall NSA - remote syslog log file
 TCPDUMP - PCAP file
 TSHARK - PCAP file
 
-TODO (not ranked): 
-1. ~~Add iptables, PF, and IPFW support to block matches~~
-2. Allow multiple log files and types to be specified at once
+TODO (not ranked) [~~DONE~~]: 
+1. ~~Add iptables, PF, and IPFW support to block matches~~ 
+2. ~~Allow multiple log files and types to be specified at once~~
 3. Add/fix counters
 4. More efficient parsing
 5. Rewrite script in Python
