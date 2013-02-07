@@ -7,6 +7,7 @@ SUPPORTED LOGS:
 
 ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
 BRO-IDS - dns.log file
+HOSTS - /etc/hosts file
 HTTPRY - log file
 ISC BIND - query log file
 PassiveDNS - log file
