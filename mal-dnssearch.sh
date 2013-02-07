@@ -64,7 +64,9 @@ fi
 
 compare()
 {
-echo -e "\n[*] Results - ${FILE}: comparing $logttl entries\n"
+found=0
+tally=0
+echo -e "\n[*] |$PROG Results| - ${FILE}: comparing $logttl entries\n"
 while read bad_host
 do
 let tally++
@@ -163,8 +165,6 @@ exit 1
 fi
 
 # vars
-tally=0
-found=0
 total=$(sed -e '/^$/d' -e '/^#/d' < malhosts.txt | wc -l)
 #logttl=$(wc -l $FILE | awk '{ print $1 }')
 
@@ -176,31 +176,39 @@ fi
 
 # meat
 if [ "$BRO" == 1 ]; then
+FILE=$BROFILE; PROG=BRO-IDS
 compare "bro-cut query < \$BROFILE | $(eval wlistchk) | sort | uniq"
 fi
 if [ "$PDNS" == 1 ]; then
+FILE=$PDNSFILE; PROG=PassiveDNS
 compare "sed 's/||/:/g' < \$PDNSFILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | sort | uniq"
 fi
 if [ "$HTTPRY" == 1 ]; then
+FILE=$HTTPRYFILE; PROG=HttPry
 compare "awk '{ print $7 }' < \$HTTPRYFILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
 if [ "$TSHARK" == 1 ]; then
+FILE=$TSHARKFILE; PROG=TShark
 compare "tshark -nr \$TSHARKFILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
 | $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
 fi
 if [ "$TCPDUMP" == 1 ]; then
+FILE=$TCPDUMPFILE; PROG=TCPDump
 compare "tcpdump -nnr \$TCPDUMPFILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
  | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
 fi
 if [ "$ARGUS" == 1 ]; then
+FILE=$ARGUSFILE; PROG=ARGUS
 compare "ra -nnr \$ARGUSFILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | sort | uniq"
 fi
 if [ "$BIND" == 1 ]; then
+FILE=$BINDFILE; PROG=BIND
 compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$BINDFILE | $(eval wlistchk) \ 
 | grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | sort | uniq"
 fi 
 if [ "$SWALL" == 1 ]; then
+FILE=$SWALLFILE; PROG=SonicWALL
 compare "grep -h -o 'dstname=.* a' \$SWALLFILE 2>/dev/null | $(eval wlistchk) \
 | sed -e 's/dstname=//' -e 's/ a.*//' | sort | uniq"
 fi 
