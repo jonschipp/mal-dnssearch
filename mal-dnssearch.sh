@@ -12,6 +12,7 @@ Compare DNS logs against known mal-ware host list
       Options
 	-a 	ARGUS file
         -b      BRO-IDS dns.log file
+	-c      /etc/hosts file
         -d      Tcpdump pcap file
 	-f      insert firewall rules e.g. iptables,pf,ipfw
 	-h      help (this)
@@ -96,7 +97,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "hb:d:f:i:l:p:o:s:t:w:" OPTION
+while getopts "ha:b:c:d:f:i:l:p:o:s:t:w:" OPTION
 do
      case $OPTION in
 	 a)
@@ -107,6 +108,10 @@ do
              BRO=1
              BROFILE="$OPTARG"
              ;;
+	 c) 
+	     HOSTS=1
+	     HOSTSFILE="$OPTARG"
+	     ;; 
 	 d) 
              TCPDUMP=1
              TCPDUMPFILE="$OPTARG"
@@ -212,3 +217,8 @@ FILE=$SWALLFILE; PROG=SonicWALL
 compare "grep -h -o 'dstname=.* a' \$SWALLFILE 2>/dev/null | $(eval wlistchk) \
 | sed -e 's/dstname=//' -e 's/ a.*//' | sort | uniq"
 fi 
+if [ "$HOSTS" == 1 ]; then
+FILE=$HOSTSFILE; PROG="Hosts File"
+compare "sed -e '/^$/d' -e '/^#/d' < \$HOSTSFILE | $(eval wlistchk) | cut -f3 \
+| awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | sort | uniq"
+fi
