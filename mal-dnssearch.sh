@@ -1,5 +1,5 @@
 #!/bin/bash
-
+ 
 # print stats: kill -USR2 $pid
 trap "stats" SIGUSR2
 
@@ -67,7 +67,7 @@ compare()
 {
 found=0
 tally=0
-echo -e "\n[*] |$PROG Results| - ${FILE}: comparing $logttl entries\n"
+echo -e "\n[*] |$PROG Results| - ${FILE}: $COUNT total entries\n"
 while read bad_host
 do
 let tally++
@@ -171,7 +171,6 @@ fi
 
 # vars
 total=$(sed -e '/^$/d' -e '/^#/d' < malhosts.txt | wc -l)
-#logttl=$(wc -l $FILE | awk '{ print $1 }')
 
 # logging
 if [ "$LOG" == 1 ]; then
@@ -181,44 +180,44 @@ fi
 
 # meat
 if [ "$BRO" == 1 ]; then
-FILE=$BROFILE; PROG=BRO-IDS
+FILE=$BROFILE; PROG=BRO-IDS; COUNT=$(wc -l $BROFILE | awk '{ print $1 }' )
 compare "bro-cut query < \$BROFILE | $(eval wlistchk) | sort | uniq"
 fi
 if [ "$PDNS" == 1 ]; then
-FILE=$PDNSFILE; PROG=PassiveDNS
+FILE=$PDNSFILE; PROG=PassiveDNS; COUNT=$(wc -l $PDNSFILE | awk '{ print $1 }')
 compare "sed 's/||/:/g' < \$PDNSFILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | sort | uniq"
 fi
 if [ "$HTTPRY" == 1 ]; then
-FILE=$HTTPRYFILE; PROG=HttPry
+FILE=$HTTPRYFILE; PROG=HttPry; COUNT=$(wc -l $HTTPRYFILE | awk '{ print $1 }')
 compare "awk '{ print $7 }' < \$HTTPRYFILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
 if [ "$TSHARK" == 1 ]; then
-FILE=$TSHARKFILE; PROG=TShark
+FILE=$TSHARKFILE; PROG=TShark; COUNT=$(wc -l $TSHARKFILE | awk '{ print $1 }')
 compare "tshark -nr \$TSHARKFILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
 | $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
 fi
 if [ "$TCPDUMP" == 1 ]; then
-FILE=$TCPDUMPFILE; PROG=TCPDump
+FILE=$TCPDUMPFILE; PROG=TCPDump; COUNT=$(wc -l $TCPDUMPFILE | awk '{ print $1 }')
 compare "tcpdump -nnr \$TCPDUMPFILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
  | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
 fi
 if [ "$ARGUS" == 1 ]; then
-FILE=$ARGUSFILE; PROG=ARGUS
+FILE=$ARGUSFILE; PROG=ARGUS; COUNT=$(wc -l $ARGUSFILE | awk '{ print $1 }')
 compare "ra -nnr \$ARGUSFILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | sort | uniq"
 fi
 if [ "$BIND" == 1 ]; then
-FILE=$BINDFILE; PROG=BIND
+FILE=$BINDFILE; PROG=BIND; COUNT=$(wc -l $BINDFILE | awk '{ print $1 }')
 compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$BINDFILE | $(eval wlistchk) \ 
 | grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | sort | uniq"
 fi 
 if [ "$SWALL" == 1 ]; then
-FILE=$SWALLFILE; PROG=SonicWALL
+FILE=$SWALLFILE; PROG=SonicWALL; COUNT=$(wc -l $SWALLFILE | awk '{ print $1 }')
 compare "grep -h -o 'dstname=.* a' \$SWALLFILE 2>/dev/null | $(eval wlistchk) \
 | sed -e 's/dstname=//' -e 's/ a.*//' | sort | uniq"
 fi 
 if [ "$HOSTS" == 1 ]; then
-FILE=$HOSTSFILE; PROG="Hosts File"
+FILE=$HOSTSFILE; PROG="Hosts File"; COUNT=$(wc -l $HOSTSFILE | awk '{ print $1 }')
 compare "sed -e '/^$/d' -e '/^#/d' < \$HOSTSFILE | $(eval wlistchk) | cut -f3 \
 | awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | sort | uniq"
 fi

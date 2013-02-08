@@ -3,6 +3,8 @@ mal-dnssearch
 Compare log files with DNS names against an updated and compiled malhost list. 
 Downloads daily malhosts list and compares each entry to log file entries. 
 
+Ran with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu
+
 SUPPORTED LOGS: 
 
 ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
@@ -18,10 +20,10 @@ TSHARK - PCAP file
 TODO (not ranked) [~~DONE~~]: 
 1. ~~Add iptables, PF, and IPFW support to block matches~~ 
 2. ~~Allow multiple log files and types to be specified at once~~
-3. Add/fix counters
+3. ~~Add/fix counters~~
 4. More efficient parsing
 5. Rewrite script in Python
-6. Add more log support (e-mail me with request and log sample)
+6. Add support for more logs (e-mail me with request and log sample)
 7. Read in alternative lists e.g. Emerging Threats, CIArmy, DShield 
 8. check for necessary programs where needed e.g. bro-cut
 
@@ -31,7 +33,7 @@ Non-mandatory options:
 -w accept file with one entry per line or grep regex e.g. -w "dont|match|these", -w whitelist.txt
 -l Log stdout & stderr to file  e.g. -l /var/log/output.log
 -f block matched hosts w/ firewall, 3 available: iptables, pf, ipfw e.g. -f pf
-Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log]
+Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall]
 
 EXAMPLES:
 
