@@ -55,6 +55,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-1 	http://labs.snort.org/feeds/ip-filter.blf
 	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
  	-3      http://reputation.alienvault.com/reputation.generic (BIG file)
+	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules
 
       Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 
@@ -110,6 +111,9 @@ parse()
 {
 if [ "$PARSE" == "3" ]; then
 { rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
+fi
+if [ "$PARSE" == "4" ]; then
+{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' -e 's/\,/\n/g' | sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
 
@@ -171,7 +175,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:123" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:1234" OPTION
 do
      case $OPTION in
 	 a)
@@ -255,6 +259,11 @@ do
 	     MALHOSTFILE="reputation.generic"
 	     PARSE="$OPTION"
              ;;
+	 4)
+	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
+	     MALHOSTFILE="botcc.rules"
+	     PARSE="$OPTION"
+             ;;
 	
          \?)
              exit 1
@@ -328,7 +337,7 @@ fi
 # All the IP list stuff is done here
 if [ "$IP" == 1 ]; then
 download
-{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 > $MALHOSTFILE; } < $MALHOSTFILE
+{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
 parse
 FILE=$IPFILE; PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $IPFILE)
 compare "cat $IPFILE | $(eval wlistchk) | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq"
