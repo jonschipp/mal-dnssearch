@@ -30,35 +30,37 @@ cat <<EOF
 
 Compare DNS/IP logs against known mal-ware host lists
 
-     Log Input Options
+     Log File Options:
 	-a 	ARGUS file
         -b      BRO-IDS dns.log file
 	-c      Custom file - DNS, one per line
         -d      Tcpdump pcap file
 	-e      /etc/hosts file
-	-f      insert firewall rules e.g. iptables,pf,ipfw
-	-h      help (this)
 	-i	ISC's BIND query log file 
-        -l      Log stdout & stderr to file
-	-N 	Skip file download    
         -p      PassiveDNS log file
 	-o      SonicWall NSA log file
 	-s      Tshark pcap file
 	-t      HttPry log file
-	-v	Verbose, echo each line line from mallist
-	-V      More verbose, echo each line read from log
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
 	-z      Custom file - IP, one per line
 
-      Malware List Options
+      Malware List Options:
+	-0      Custom, one entry per line
 	-1 	http://labs.snort.org/feeds/ip-filter.blf
 	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
  	-3      http://reputation.alienvault.com/reputation.generic (BIG file)
 	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules
 	-5      http://rules.emergingthreats.net/open/suricata/rules/tor.rules
 
-      Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt
+      Processing Options:
+	-h      help (this message)
+	-f      insert firewall rules (blocks) e.g. iptables,pf,ipfw
+        -l      Log stdout & stderr to <file>
+	-N 	Skip file download    
+	-v	Verbose, echo each line line from mallist
+	-V      More verbose, echo each line read from log + -v
+        -w      Whitelist, accept <file> or regex
 
 Usage: $0 [option] logfile [-w whitelist] [ -f fw ][-l output.log]
 e.g. $0 -p /var/log/pdns.log -w "facebook|google" -f iptables -l output.log
@@ -67,7 +69,7 @@ EOF
 
 download()
 {
-if [ "$DOWNLOAD" != "NO" ]; then 
+if [ "$DOWNLOAD" != "NO" ] && [ "$PARSE" != "0"  ]; then 
 	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
 	if command -v curl >/dev/null 2>&1; then
 	curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
@@ -176,7 +178,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:12345" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:12345" OPTION
 do
      case $OPTION in
 	 a)
@@ -247,6 +249,11 @@ do
 	     IP=1
 	     IPFILE="$OPTARG"
 	     ;;
+	 0)
+	     MALHOSTURL="none"
+	     MALHOSTFILE="$OPTARG"
+	     PARSE="$OPTION"
+             ;;
 	 1)
 	     MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
 	     MALHOSTFILE="ip-filter.blf"

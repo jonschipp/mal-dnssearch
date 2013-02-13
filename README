@@ -20,6 +20,7 @@ TSHARK - PCAP file
 
 SUPPORTED MALWARE HOST LISTS:
 
+Custom file, one entry per line
 http://secure.mayhemiclabs.com/malhosts/malhosts.txt (Default)
 http://labs.snort.org/feeds/ip-filter.blf
 http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
@@ -49,8 +50,8 @@ Non-mandatory options:
 -N skip file download
 -v verbose mode, echo echo line from malhost list, for debugging
 -V extended verbose mode, echo each line from the log file in addition to the malhost list, for debugging
--z specify an IP list instead of a DNS. Use in conjuction with -1, -2, -3, -4 for mal-ware lists by IP
-Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-1234 ] [-vV ]
+-z specify an IP list instead of a DNS. Use in conjuction with -0,-1,-2,-3,-4 for mal-ware lists by IP
+Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-01234 ] [-vV ]
 
 EXAMPLES:
 
@@ -60,6 +61,7 @@ EXAMPLES:
 ./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -f iptables -l dns.results.log
 ./mal-dnsearch.sh -a bro.log -b dns.log -c custom.txt -f iptables -l dns.results.log
 ./mal-dnsearch.sh -z iplist.log -2 -l ip.results.log -N -v
+./mal-dnsearch.sh -z iplist.log -0 malIP.txt -l ip.results.log
 
 MORE INFO: https://sickbits.net/finding-malware-by-dns-cache-snooping/
 AUTHOR: Jon Schipp (keisterstash)
