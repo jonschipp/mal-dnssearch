@@ -139,13 +139,12 @@ let tally++
 			fi 
 			if [ "$bad_host" == "$host" ]; then
 			echo "[+] Found - host '"$host"' matches "
+			let found++
 			if [ "$FWTRUE" == 1 ]; then
 			ipblock
 			fi
-
-	let found++
-	break
-	fi
+		break
+			fi
 
 		done
 

@@ -30,7 +30,7 @@ TODO (not ranked) [~~DONE~~]:
 2. ~~Allow multiple log files and types to be specified at once~~
 3. ~~Add/fix counters~~
 4. More efficient parsing
-5. Add verbosity/debugging option
+5. ~~Added two verbosity options~~
 6. Add support for more logs (e-mail me with request and log sample)
 7. ~~Read in alternative lists~~ e.g. Emerging Threats, CIArmy, DShield 
 8. Check for necessary programs where needed e.g. bro-cut
@@ -43,8 +43,10 @@ Non-mandatory options:
 -w accept file with one entry per line or grep regex e.g. -w "dont|match|these", -w whitelist.txt
 -l Log stdout & stderr to file  e.g. -l /var/log/output.log
 -f block matched hosts w/ firewall, 3 available: iptables, pf, ipfw e.g. -f pf
+-v verbose mode, echo echo line from malhost list, for debugging
+-V extended verbose mode, echo each line from the log file in addition to the malhost list, for debugging
 -z specify an IP list instead of a DNS. Use in conjuction with -1, -2, or -3 for mal-ware lists by IP
-Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-# IP malist ]
+Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-123 ] [-vV ]
 
 EXAMPLES:
 
@@ -53,7 +55,7 @@ EXAMPLES:
 ./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -w "company.com|abc.com|google|facebook" -l dns.results.log
 ./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -f iptables -l dns.results.log
 ./mal-dnsearch.sh -a bro.log -b dns.log -c custom.txt -f iptables -l dns.results.log
-./mal-dnsearch.sh -z iplist.log -2 -l ip.results.log
+./mal-dnsearch.sh -z iplist.log -2 -l ip.results.log -v 
 
 MORE INFO: https://sickbits.net/finding-malware-by-dns-cache-snooping/
 AUTHOR: Jon Schipp (keisterstash)
