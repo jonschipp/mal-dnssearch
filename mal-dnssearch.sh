@@ -40,6 +40,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-h      help (this)
 	-i	ISC's BIND query log file 
         -l      Log stdout & stderr to file
+	-N 	Skip file download    
         -p      PassiveDNS log file
 	-o      SonicWall NSA log file
 	-s      Tshark pcap file
@@ -64,24 +65,28 @@ EOF
 
 download()
 {
-echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
-if command -v curl >/dev/null 2>&1; then
-curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+if [ "$DOWNLOAD" != "NO" ]; then 
+	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
+	if command -v curl >/dev/null 2>&1; then
+	curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
-	if [ "$?" -gt 0 ]; then
-	echo -e "\nDownload Failed! - Check URL"
+		if [ "$?" -gt 0 ]; then
+		echo -e "\nDownload Failed! - Check URL"
+		exit 1
+		fi
+
+	elif command -v wget >/dev/null 2>&1; then
+	wget --no-check certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+
+		if [ "$?" -gt 0 ]; then
+		echo -e "\nDownload Failed! - Check URL"
+		exit 1
+		fi
+
+	else
+	echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
 	exit 1
 	fi
-elif command -v wget >/dev/null 2>&1; then
-wget --no-check certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
-
-	if [ "$?" -gt 0 ]; then
-	echo -e "\nDownload Failed! - Check URL"
-	exit 1
-	fi
-else
-echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
-exit 1
 fi
 }
 
@@ -98,6 +103,13 @@ elif [ -f $WLISTDOM ]; then
 echo "grep -v -i -f $WLISTDOM"
 else
 echo "grep -v -i -E '(in-addr|$WLISTDOM)'"
+fi
+}
+
+parse()
+{
+if [ "$PARSE" == "3" ]; then
+{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
 
@@ -159,7 +171,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:p:o:s:t:vVw:z:123" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:123" OPTION
 do
      case $OPTION in
 	 a)
@@ -197,6 +209,9 @@ do
          l)
              LOG=1
              LOGFILE="$OPTARG"
+             ;;
+	 N) 
+             DOWNLOAD="NO"
              ;;
          p)
              PDNS=1
@@ -238,6 +253,7 @@ do
 	 3)
 	     MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
 	     MALHOSTFILE="reputation.generic"
+	     PARSE="$OPTION"
              ;;
 	
          \?)
@@ -309,12 +325,11 @@ if [ "$CUSTOM" == 1 ]; then
 FILE=$CUSTOMFILE; PROG="Custom File"; COUNT=$(awk 'END { print NR }' $CUSTOMFILE)
 compare "cat \$CUSTOMFILE | $(eval wlistchk) | sort | uniq"
 fi
-
 # All the IP list stuff is done here
 if [ "$IP" == 1 ]; then
 download
-sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 < $MALHOSTFILE > MALHOSTFILE; 
-mv MALHOSTFILE $MALHOSTFILE
+{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 > $MALHOSTFILE; } < $MALHOSTFILE
+parse
 FILE=$IPFILE; PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $IPFILE)
 compare "cat $IPFILE | $(eval wlistchk) | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq"
 fi
