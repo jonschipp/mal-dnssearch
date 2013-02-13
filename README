@@ -1,7 +1,7 @@
 mal-dnssearch
 
-Compare log files with DNS names against an updated and compiled malhost list. 
-Downloads daily malhosts list and compares each entry to log file entries. 
+Compare log files with DNS names (default) or IPs against an updated and compiled malhost list. 
+Downloads malhost lists and compares each entry to log file entries. 
 
 Ran with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu
 
@@ -18,15 +18,24 @@ SonicWall NSA - remote syslog log file
 TCPDUMP - PCAP file
 TSHARK - PCAP file
 
+SUPPORTED MALWARE HOST LISTS:
+
+http://secure.mayhemiclabs.com/malhosts/malhosts.txt (Default)
+http://labs.snort.org/feeds/ip-filter.blf
+http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
+http://reputation.alienvault.com/reputation.generic
+
 TODO (not ranked) [~~DONE~~]: 
 1. ~~Add iptables, PF, and IPFW support to block matches~~ 
 2. ~~Allow multiple log files and types to be specified at once~~
 3. ~~Add/fix counters~~
 4. More efficient parsing
-5. Rewrite script in Python
+5. Add verbosity/debugging option
 6. Add support for more logs (e-mail me with request and log sample)
-7. Read in alternative lists e.g. Emerging Threats, CIArmy, DShield 
-8. check for necessary programs where needed e.g. bro-cut
+7. ~~Read in alternative lists~~ e.g. Emerging Threats, CIArmy, DShield 
+8. Check for necessary programs where needed e.g. bro-cut
+9. ~~Ability to read in file with IPs instead of names~~
+10. Rewrite script in Python
 
 USAGE:
 
@@ -34,7 +43,8 @@ Non-mandatory options:
 -w accept file with one entry per line or grep regex e.g. -w "dont|match|these", -w whitelist.txt
 -l Log stdout & stderr to file  e.g. -l /var/log/output.log
 -f block matched hosts w/ firewall, 3 available: iptables, pf, ipfw e.g. -f pf
-Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall]
+-z specify an IP list instead of a DNS. Use in conjuction with -1, -2, or -3 for mal-ware lists by IP
+Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-# IP malist ]
 
 EXAMPLES:
 
@@ -43,6 +53,7 @@ EXAMPLES:
 ./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -w "company.com|abc.com|google|facebook" -l dns.results.log
 ./mal-dnsearch.sh -b /usr/local/bro/logs/current/dns.log -f iptables -l dns.results.log
 ./mal-dnsearch.sh -a bro.log -b dns.log -c custom.txt -f iptables -l dns.results.log
+./mal-dnsearch.sh -z iplist.log -2 -l ip.results.log
 
 MORE INFO: https://sickbits.net/finding-malware-by-dns-cache-snooping/
 AUTHOR: Jon Schipp (keisterstash)
