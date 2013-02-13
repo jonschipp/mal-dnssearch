@@ -56,6 +56,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
  	-3      http://reputation.alienvault.com/reputation.generic (BIG file)
 	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules
+	-5      http://rules.emergingthreats.net/open/suricata/rules/tor.rules
 
       Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 
@@ -112,7 +113,7 @@ parse()
 if [ "$PARSE" == "3" ]; then
 { rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
-if [ "$PARSE" == "4" ]; then
+if [ "$PARSE" == "4" ] || [ "$PARSE" == "5" ] ; then
 { rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' -e 's/\,/\n/g' | sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
@@ -175,7 +176,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:1234" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:12345" OPTION
 do
      case $OPTION in
 	 a)
@@ -264,7 +265,12 @@ do
 	     MALHOSTFILE="botcc.rules"
 	     PARSE="$OPTION"
              ;;
-	
+	 5)
+	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"	
+	     MALHOSTFILE="tor.rules"
+	     PARSE="$OPTION"
+             ;;
+
          \?)
              exit 1
              ;;
