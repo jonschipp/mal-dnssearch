@@ -28,8 +28,7 @@ usage()
 {
 cat <<EOF
 
-Compare DNS logs against known mal-ware host list
-Defaults to http://secure.mayhemiclabs.com/malhosts/malhosts.txt
+Compare DNS/IP logs against known mal-ware host lists
 
      Log Input Options
 	-a 	ARGUS file
@@ -45,6 +44,8 @@ Defaults to http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 	-o      SonicWall NSA log file
 	-s      Tshark pcap file
 	-t      HttPry log file
+	-v	Verbose, echo each line line from mallist
+	-V      More verbose, echo each line read from log
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
 	-z      Custom file - IP, one per line
@@ -66,12 +67,14 @@ download()
 echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
 if command -v curl >/dev/null 2>&1; then
 curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+
 	if [ "$?" -gt 0 ]; then
 	echo -e "\nDownload Failed! - Check URL"
 	exit 1
 	fi
 elif command -v wget >/dev/null 2>&1; then
 wget --no-check certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+
 	if [ "$?" -gt 0 ]; then
 	echo -e "\nDownload Failed! - Check URL"
 	exit 1
@@ -119,24 +122,33 @@ compare()
 {
 found=0
 tally=0
+
 echo -e "\n[*] |$PROG Results| - ${FILE}: $COUNT total entries\n"
 while read bad_host
 do
 let tally++
-for host in $(eval "$1")
-do
-if [ "$bad_host" == "$host" ]; then
-echo "[+] Found - host '"$host"' matches "
 
-	if [ "$FWTRUE" == 1 ]; then
-	ipblock
+	if [ ${VERBOSE:-0} -gt 0 ]; then
+	echo $bad_host
 	fi
 
-let found++
-break
-fi
+		for host in $(eval "$1")
+		do
+			if [ ${VERBOSE:-0} -gt 1 ]; then
+			echo $host
+			fi 
+			if [ "$bad_host" == "$host" ]; then
+			echo "[+] Found - host '"$host"' matches "
+			if [ "$FWTRUE" == 1 ]; then
+			ipblock
+			fi
 
-done
+	let found++
+	break
+	fi
+
+		done
+
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
 echo -e "--\n[=] $found of $total entries matched from malhosts.txt"
 }
@@ -148,7 +160,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:p:o:s:t:w:z:123" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:p:o:s:t:vVw:z:123" OPTION
 do
      case $OPTION in
 	 a)
@@ -208,6 +220,9 @@ do
              ;;
 	 v) 
              VERBOSE=1
+	     ;;
+	 V) 
+             VERBOSE=2
 	     ;;
 	 z) 
 	     IP=1
