@@ -29,10 +29,12 @@ usage()
 cat <<EOF
 
 Compare DNS logs against known mal-ware host list
-      Options
+Defaults to http://secure.mayhemiclabs.com/malhosts/malhosts.txt
+
+     Log Input Options
 	-a 	ARGUS file
         -b      BRO-IDS dns.log file
-	-c      custom file, 1 hostname per line
+	-c      Custom file - DNS, one per line
         -d      Tcpdump pcap file
 	-e      /etc/hosts file
 	-f      insert firewall rules e.g. iptables,pf,ipfw
@@ -45,10 +47,39 @@ Compare DNS logs against known mal-ware host list
 	-t      HttPry log file
         -w      Whitelist, accept file or argument
                 e.g. -w "dont|match|these"
+	-z      Custom file - IP, one per line
+
+      Malware List Options
+	-1 	http://labs.snort.org/feeds/ip-filter.blf
+	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
+ 	-3      http://reputation.alienvault.com/reputation.generic (BIG file)
+
+      Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 
 Usage: $0 [option] logfile [-w whitelist] [ -f fw ][-l output.log]
 e.g. $0 -p /var/log/pdns.log -w "facebook|google" -f iptables -l output.log
 EOF
+}
+
+download()
+{
+echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
+if command -v curl >/dev/null 2>&1; then
+curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+	if [ "$?" -gt 0 ]; then
+	echo -e "\nDownload Failed! - Check URL"
+	exit 1
+	fi
+elif command -v wget >/dev/null 2>&1; then
+wget --no-check certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+	if [ "$?" -gt 0 ]; then
+	echo -e "\nDownload Failed! - Check URL"
+	exit 1
+	fi
+else
+echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
+exit 1
+fi
 }
 
 stats()
@@ -92,10 +123,8 @@ echo -e "\n[*] |$PROG Results| - ${FILE}: $COUNT total entries\n"
 while read bad_host
 do
 let tally++
-
 for host in $(eval "$1")
 do
-
 if [ "$bad_host" == "$host" ]; then
 echo "[+] Found - host '"$host"' matches "
 
@@ -108,8 +137,8 @@ break
 fi
 
 done
-done < <(cut -f1 < malhosts.txt | sed -e '/^#/d' -e '/^$/d')
-echo -e "--\n[=] $found of $total entries matched from malhosts.txt\n"
+done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
+echo -e "--\n[=] $found of $total entries matched from malhosts.txt"
 }
 
 # if less than 1 argument
@@ -119,7 +148,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:i:l:p:o:s:t:w:" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:p:o:s:t:w:z:123" OPTION
 do
      case $OPTION in
 	 a)
@@ -177,6 +206,26 @@ do
          w)
              WLISTDOM="$OPTARG"
              ;;
+	 v) 
+             VERBOSE=1
+	     ;;
+	 z) 
+	     IP=1
+	     IPFILE="$OPTARG"
+	     ;;
+	 1)
+	     MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
+	     MALHOSTFILE="ip-filter.blf"
+             ;;
+	 2)
+	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt"
+	     MALHOSTFILE="compromised-ips.txt"
+             ;;
+	 3)
+	     MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
+	     MALHOSTFILE="reputation.generic"
+             ;;
+	
          \?)
              exit 1
              ;;
@@ -185,18 +234,13 @@ done
 
 echo -e "\nPID: $$"
 
-# check for curl/wget and then d/l malhost list
-if command -v curl >/dev/null 2>&1; then
-curl -O http://secure.mayhemiclabs.com/malhosts/malhosts.txt &>/dev/null
-elif command -v wget >/dev/null 2>&1; then
-wget http://secure.mayhemiclabs.com/malhosts/malhosts.txt &>/dev/null
-else
-echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
-exit 1
-fi
-
 # vars
-total=$(sed -e '/^$/d' -e '/^#/d' < malhosts.txt | wc -l)
+MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
+MALFILEDEFAULT="malhosts.txt"
+if [ -z "$MALHOSTURL" ]; then
+download
+fi
+total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | wc -l)
 
 # logging
 if [ "$LOG" == 1 ]; then
@@ -250,4 +294,13 @@ fi
 if [ "$CUSTOM" == 1 ]; then
 FILE=$CUSTOMFILE; PROG="Custom File"; COUNT=$(awk 'END { print NR }' $CUSTOMFILE)
 compare "cat \$CUSTOMFILE | $(eval wlistchk) | sort | uniq"
+fi
+
+# All the IP list stuff is done here
+if [ "$IP" == 1 ]; then
+download
+sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 < $MALHOSTFILE > MALHOSTFILE; 
+mv MALHOSTFILE $MALHOSTFILE
+FILE=$IPFILE; PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $IPFILE)
+compare "cat $IPFILE | $(eval wlistchk) | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq"
 fi
