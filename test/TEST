@@ -1,0 +1,22 @@
+Example files to test with. Make sure matching works!
+The lists do change, in that case, your best bet is to compare
+the same file which should *always* result in a match.
+
+Note: Add -v or -V to debug.
+
+e.g. 
+
+# Match DNS names against malhosts.txt list
+./mal-dnssearch.sh -c test/malhosts.test 
+
+# Match IPs by comparing the same file
+./mal-dnssearch.sh -z test/compromised-ips.test -0 test/compromised-ips.test
+
+# Match IPs from Snort Labs' ip-filter list
+./mal-dnssearch.sh -z test/ip-filter.test -1
+
+Use -N to skip download in the case where you already have the file
+
+# Create your own
+echo -e "badwebsite.com\negativeperson.net\nevilcountry.org" > list.test
+for i in $(seq 1 254); do echo 192.168.1.$i; done > list.test
