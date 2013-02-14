@@ -47,11 +47,14 @@ Compare DNS/IP logs against known mal-ware host lists
 
       Malware List Options:
 	-0      Custom, one entry per line
-	-1 	http://labs.snort.org/feeds/ip-filter.blf
-	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt
- 	-3      http://reputation.alienvault.com/reputation.generic (BIG file)
-	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules
-	-5      http://rules.emergingthreats.net/open/suricata/rules/tor.rules
+	-1 	http://labs.snort.org/feeds/ip-filter.blf (IP)
+	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt (IP)
+ 	-3      http://reputation.alienvault.com/reputation.generic (BIG file) (IP)
+	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules (IP)
+	-5      http://rules.emergingthreats.net/open/suricata/rules/tor.rules (IP)
+	-6      http://rules.emergingthreats.net/blockrules/emerging-rbn.rules (IP)
+	-7 	http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
+	-8	http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
 
       Processing Options:
 	-h      help (this message)
@@ -92,6 +95,7 @@ if [ "$DOWNLOAD" != "NO" ] && [ "$PARSE" != "0"  ]; then
 	exit 1
 	fi
 fi
+total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }' )
 }
 
 stats()
@@ -115,8 +119,19 @@ parse()
 if [ "$PARSE" == "3" ]; then
 { rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
-if [ "$PARSE" == "4" ] || [ "$PARSE" == "5" ] ; then
-{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' -e 's/\,/\n/g' | sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
+if [ "$PARSE" == "4" ] || [ "$PARSE" == "5" ] || [ "$PARSE" == "6" ]; then
+	if [ "$DOWNLOAD" != "NO" ]; then
+	{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' -e 's/\,/\n/g' \
+	| sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
+	fi
+fi
+if [ "$PARSE" == "7" ]; then
+	if [ "$DOWNLOAD" != "NO" ]; then
+	{ rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
+	fi
+fi
+if [ "$PARSE" == "8" ]; then
+{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
 
@@ -128,8 +143,8 @@ iptables -A OUTPUT -s "$bad_host" -j DROP
 iptables -A FORWARD -s "$bad_host" -j DROP
 fi
 if [ "$FW" == "pf" ]; then
-echo -e "block in from yahoo.com to any\n \
-block out from yahoo.com to any" | pfctl -a mal-dnssearch -f -
+echo -e "block in from "$bad_host" to any\n \
+block out from "$bad_host" to any" | pfctl -a mal-dnssearch -f -
 fi
 if [ "$FW" == "ipfw" ]; then
 ipfw add drop ip from "$bad_host" to any
@@ -168,7 +183,7 @@ let tally++
 		done
 
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
-echo -e "--\n[=] $found of $total entries matched from malhosts.txt"
+echo -e "--\n[=] $found of $total entries matched from $MALHOSTFILE"
 }
 
 # if less than 1 argument
@@ -178,7 +193,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:12345" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:12345678" OPTION
 do
      case $OPTION in
 	 a)
@@ -277,6 +292,21 @@ do
 	     MALHOSTFILE="tor.rules"
 	     PARSE="$OPTION"
              ;;
+	 6)
+	     MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
+	     MALHOSTFILE="emerging-rbn.rules"
+	     PARSE="$OPTION"
+             ;;
+	 7)
+	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
+	     MALHOSTFILE="hosts.txt"
+	     PARSE="$OPTION"
+             ;;
+	 8)
+	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
+	     MALHOSTFILE="ip.txt"
+	     PARSE="$OPTION"
+             ;;
 
          \?)
              exit 1
@@ -292,7 +322,6 @@ MALFILEDEFAULT="malhosts.txt"
 if [ -z "$MALHOSTURL" ]; then
 download
 fi
-total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | wc -l)
 
 # logging
 if [ "$LOG" == 1 ]; then
