@@ -55,6 +55,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-6      http://rules.emergingthreats.net/blockrules/emerging-rbn.rules (IP)
 	-7 	http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
 	-8	http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
+	-9 	http://www.ciarmy.com/list/ci-badguys.txt (IP)
 
       Processing Options:
 	-h      help (this message)
@@ -193,7 +194,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:12345678" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:123456789" OPTION
 do
      case $OPTION in
 	 a)
@@ -307,7 +308,11 @@ do
 	     MALHOSTFILE="ip.txt"
 	     PARSE="$OPTION"
              ;;
-
+	 9)
+	     MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
+	     MALHOSTFILE="ci-badguys.txt"
+	     PARSE="$OPTION"
+             ;;
          \?)
              exit 1
              ;;
@@ -329,7 +334,7 @@ exec > >(tee "$LOGFILE") 2>&1
 echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
-# meat
+# dns meat
 if [ "$BRO" == 1 ]; then
 FILE=$BROFILE; PROG=BRO-IDS; COUNT=$(awk 'END { print NR }' $BROFILE)
 compare "bro-cut query < \$BROFILE | $(eval wlistchk) | sort | uniq"
@@ -376,7 +381,7 @@ if [ "$CUSTOM" == 1 ]; then
 FILE=$CUSTOMFILE; PROG="Custom File"; COUNT=$(awk 'END { print NR }' $CUSTOMFILE)
 compare "cat \$CUSTOMFILE | $(eval wlistchk) | sort | uniq"
 fi
-# All the IP list stuff is done here
+# ip meat
 if [ "$IP" == 1 ]; then
 download
 { rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE

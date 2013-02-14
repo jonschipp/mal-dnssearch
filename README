@@ -18,6 +18,8 @@ SonicWall NSA - remote syslog log file
 TCPDUMP - PCAP file
 TSHARK - PCAP file
 
+Your log not supported? E-mail me a sample, I'll add it.
+
 SUPPORTED MALWARE HOST LISTS:
 
 Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
@@ -31,7 +33,7 @@ Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
 -6 http://rules.emergingthreats.net/blockrules/emerging-rbn.rules (IP)
 -7 http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
 -8 http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
-
+-9 http://www.ciarmy.com/list/ci-badguys.txt (IP)
 
 TODO (not ranked) [~~DONE~~]: 
 1. ~~Add iptables, PF, and IPFW support to block matches~~ 
@@ -40,7 +42,7 @@ TODO (not ranked) [~~DONE~~]:
 4. More efficient parsing
 5. ~~Added two verbosity options~~
 6. Add support for more logs (e-mail me with request and log sample)
-7. ~~Read in alternative lists~~ e.g. Emerging Threats, CIArmy, DShield 
+7. ~~Read in alternative lists e.g. Emerging Threats, CIArmy~~
 8. Check for necessary programs where needed e.g. bro-cut
 9. ~~Ability to read in file with IPs instead of names~~
 10. ~~Add skip download option~~
@@ -56,7 +58,7 @@ Non-mandatory options:
 -v verbose mode, echo echo line from malhost list, for debugging
 -V extended verbose mode, echo each line from the log file in addition to the malhost list, for debugging
 -z specify an IP list instead of a DNS. Use in conjuction with -# for choice of mal list
-Usage: ./mal-dnssearch <log option> <logfile> [-w whitelist] [-l output.log] [-f firewall] [-# ] [-vV ]
+Usage: ./mal-dnssearch <logoption> <logfile> [-w whitelist] [-l out.log] [-f firewall] [-#] [-N] [-vV]
 
 EXAMPLES:
 
