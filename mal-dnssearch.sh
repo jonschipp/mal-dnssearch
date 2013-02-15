@@ -41,12 +41,10 @@ Compare DNS/IP logs against known mal-ware host lists
 	-o      SonicWall NSA log file
 	-s      Tshark pcap file
 	-t      HttPry log file
-        -w      Whitelist, accept file or argument
-                e.g. -w "dont|match|these"
 	-z      Custom file - IP, one per line
 
       Malware List Options:
-	-0      Custom, one entry per line
+	-0      Custom, one IP entry per line
 	-1 	http://labs.snort.org/feeds/ip-filter.blf (IP)
 	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt (IP)
  	-3      http://reputation.alienvault.com/reputation.generic (BIG file) (IP)
@@ -65,6 +63,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-v	Verbose, echo each line line from mallist
 	-V      More verbose, echo each line read from log + -v
         -w      Whitelist, accept <file> or regex
+                e.g. -w "dont|match|these"
 
 Usage: $0 [option] logfile [-w whitelist] [ -f fw ][-l output.log]
 e.g. $0 -p /var/log/pdns.log -w "facebook|google" -f iptables -l output.log
@@ -302,6 +301,7 @@ do
 	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
 	     MALHOSTFILE="hosts.txt"
 	     PARSE="$OPTION"
+	     DNS=1
              ;;
 	 8)
 	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
@@ -332,6 +332,12 @@ fi
 if [ "$LOG" == 1 ]; then
 exec > >(tee "$LOGFILE") 2>&1
 echo -e "\n --> Logging stdout & stderr to $LOGFILE"
+fi
+
+# hack for -7, will fix later
+if [ "$DNS" == "1" ]; then
+download
+parse
 fi
 
 # dns meat

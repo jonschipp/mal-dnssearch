@@ -15,7 +15,13 @@ e.g.
 # Match IPs from Snort Labs' ip-filter list
 ./mal-dnssearch.sh -z test/ip-filter.test -1
 
-Use -N to skip download in the case where you already have the file
+# Match default list (DNS) against two log inputs
+./mal-dnssearch.sh -p test/malhosts.test -d test/dns.pcap 
+
+# Same as above but use the an alternative mal host (DNS) file
+./mal-dnssearch.sh -p test/malhosts.test -s test/dns.pcap -7 -N
+
+Note: Use -N to skip download in the case where you already have the file
 
 # Create your own
 echo -e "badwebsite.com\negativeperson.net\nevilcountry.org" > list.test

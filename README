@@ -5,20 +5,25 @@ Downloads malhost lists and compares each entry to log file entries.
 
 Ran with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu
 
-SUPPORTED LOGS: 
+SUPPORTED LOGS (parses DNS names only): 
 
-ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
-BRO-IDS - dns.log file
-CUSTOM - custom file with one hostname per line without trailing FQDN dot
-HOSTS - /etc/hosts file
-HTTPRY - log file
-ISC BIND - query log file
-PassiveDNS - log file
-SonicWall NSA - remote syslog log file
-TCPDUMP - PCAP file
-TSHARK - PCAP file
+-a ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
+-b BRO-IDS - dns.log file
+-c CUSTOM - custom file with one DNS name per line w/o trailing FQDN dot
+-d TCPDUMP - PCAP file
+-e HOSTS - /etc/hosts file
+-i ISC BIND - query log file
+-p PassiveDNS - log file
+-o SonicWall NSA - remote syslog log file
+-s TSHARK - PCAP file
+-t HTTPRY - log file
 
 Your log not supported? E-mail me a sample, I'll add it.
+
+CUSTOM LOG (IP parsing):
+
+-z Custom file - with IP addresses, one per line. 
+Use in conjuction with the IP malware host lists below.
 
 SUPPORTED MALWARE HOST LISTS:
 
@@ -69,6 +74,8 @@ EXAMPLES:
 ./mal-dnsearch.sh -a bro.log -b dns.log -c custom.txt -f iptables -l dns.results.log
 ./mal-dnsearch.sh -z iplist.log -2 -l ip.results.log -N -v
 ./mal-dnsearch.sh -z iplist.log -0 malIP.txt -l ip.results.log
+./mal-dnsearch.sh -s dns.pcap -7
+./mal-dnssearch.sh -p test/malhosts.test -s test/dns.pcap -7 -N
 
 MORE INFO: https://sickbits.net/finding-malware-by-dns-cache-snooping/
 AUTHOR: Jon Schipp (keisterstash)
