@@ -65,7 +65,7 @@ Compare DNS/IP logs against known mal-ware host lists
         -w      Whitelist, accept <file> or regex
                 e.g. -w "dont|match|these"
 
-Usage: $0 <logoption> <logfile> [-w whitelist] [-l out.log] [-f fw][-#] [-N] [-vV]
+Usage: $0 <logoption> <logfile> [-w whitelist] [-l out.log] [-f fw] [-#] [-N] [-vV]
 e.g. $0 -p /var/log/pdns.log -w "facebook|google" -f iptables -l output.log
 EOF
 }
