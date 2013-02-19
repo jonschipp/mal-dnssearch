@@ -51,7 +51,8 @@ TODO (not ranked) [~~DONE~~]:
 8. Check for necessary programs where needed e.g. bro-cut
 9. ~~Ability to read in file with IPs instead of names~~
 10. ~~Add skip download option~~
-11. Rewrite script in Python
+11. Option to edit/change URLs in the script
+12. Rewrite script in Python
 
 USAGE:
 
