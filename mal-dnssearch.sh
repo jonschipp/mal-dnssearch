@@ -28,7 +28,8 @@ usage()
 {
 cat <<EOF
 
-Compare DNS/IP logs against known mal-ware host lists
+Compare DNS/IP logs against known mal-ware host lists.
+Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 
      Log File Options:
 	-a 	ARGUS file
@@ -54,6 +55,7 @@ Compare DNS/IP logs against known mal-ware host lists
 	-7 	http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
 	-8	http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
 	-9 	http://www.ciarmy.com/list/ci-badguys.txt (IP)
+        -M      https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
 
       Processing Options:
 	-h      help (this message)
@@ -130,7 +132,7 @@ if [ "$PARSE" == "7" ]; then
 	{ rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
 	fi
 fi
-if [ "$PARSE" == "8" ]; then
+if [ "$PARSE" == "8" ] || [ "$PARSE" == "M" ]; then
 { rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
@@ -193,7 +195,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:Np:o:s:t:vVw:z:0:123456789" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:M:Np:o:s:t:vVw:z:0:123456789" OPTION
 do
      case $OPTION in
 	 a)
@@ -313,6 +315,13 @@ do
 	     MALHOSTFILE="ci-badguys.txt"
 	     PARSE="$OPTION"
              ;;
+	 M)  
+	     MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
+	     MALHOSTFILE="mandiant_apt1.dns"
+	     PARSE="$OPTION"
+	     DNS=1
+             ;;
+
          \?)
              exit 1
              ;;
@@ -334,7 +343,7 @@ exec > >(tee "$LOGFILE") 2>&1
 echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
-# hack for -7, will fix later
+# hack for -7 and -M, will fix later
 if [ "$DNS" == "1" ]; then
 download
 parse

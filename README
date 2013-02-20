@@ -39,6 +39,7 @@ Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
 -7 http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
 -8 http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
 -9 http://www.ciarmy.com/list/ci-badguys.txt (IP)
+-M https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
 
 TODO (not ranked) [~~DONE~~]: 
 1. ~~Add iptables, PF, and IPFW support to block matches~~ 
