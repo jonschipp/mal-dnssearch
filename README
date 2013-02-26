@@ -53,7 +53,8 @@ TODO (not ranked) [~~DONE~~]:
 9. ~~Ability to read in file with IPs instead of names~~
 10. ~~Add skip download option~~
 11. Option to edit/change URLs in the script
-12. Rewrite script in Python
+12. Add cron mode option
+13. Rewrite script in Python
 
 USAGE:
 
