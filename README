@@ -49,7 +49,7 @@ TODO (not ranked) [~~DONE~~]:
 5. ~~Added two verbosity options~~
 6. Add support for more logs (e-mail me with request and log sample)
 7. ~~Read in alternative lists e.g. Emerging Threats, CIArmy~~
-8. Check for necessary programs where needed e.g. bro-cut
+8. Check for necessary programs where needed e.g. bro-cut, ra, tcpdump, tshark
 9. ~~Ability to read in file with IPs instead of names~~
 10. ~~Add skip download option~~
 11. Option to edit/change URLs in the script
