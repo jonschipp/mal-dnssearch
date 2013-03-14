@@ -195,7 +195,7 @@ exit 1
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:M:Np:o:s:t:vVw:z:0:123456789" OPTION
+while getopts "ha:b:c:d:e:f:g:i:l:MNp:o:s:t:vVw:z:0:123456789" OPTION
 do
      case $OPTION in
 	 a)
