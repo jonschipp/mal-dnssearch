@@ -56,6 +56,9 @@ TODO (not ranked) [~~DONE~~]:
 12. Add cron mode option
 13. Rewrite script in Python
 14. Add option to download list only
+15. See if you can read from the Collective Intelligence Framework
+16. Try optimizing with Gnu Parallel 
+17. See if there's a Team Cymru list to match against.
 
 USAGE:
 
