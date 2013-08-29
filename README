@@ -56,9 +56,16 @@ TODO (not ranked) [~~DONE~~]:
 12. Add cron mode option
 13. Rewrite script in Python
 14. Add option to download list only
-15. See if you can read from the Collective Intelligence Framework
+15. See if you can read from the Collective Intelligence Framework database
 16. Try optimizing with Gnu Parallel 
 17. See if there's a Team Cymru list to match against.
+18. Add option to combine all IP and DNS lists into a single IP or DNS list. e.g. --all [dns|ip]
+19. Add lists:
+	* http://www.dragonresearchgroup.org/insight/
+	* http://danger.rulez.sk/projects/bruteforceblocker/blist.php
+	* http://www.openbl.org/lists/date_all.txt
+	* http://www.mirc.com/servers.ini
+
 
 USAGE:
 
