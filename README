@@ -65,7 +65,9 @@ TODO (not ranked) [~~DONE~~]:
 	* http://danger.rulez.sk/projects/bruteforceblocker/blist.php
 	* http://www.openbl.org/lists/date_all.txt
 	* http://www.mirc.com/servers.ini
-
+20. Read from exported Sguil event logs
+21. Rewrite log options to use -L <log type>
+22. Rewrite malware host lists options to -M <list>  
 
 USAGE:
 
