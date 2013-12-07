@@ -1,11 +1,24 @@
 mal-dnssearch
 
-Compare log files with DNS names (default) or IPs against an updated and compiled malhost list. 
-Downloads malhost lists and compares each entry to log file entries. 
+Compare log files with DNS names (default) or IPs against an updated and compiled malhost list.
+Downloads malhost lists and compares each entry to log file entries.
 
 Ran with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu
 
-SUPPORTED LOGS (parses DNS names only): 
+INSTALLATION:
+
+Edit the Makefile or use the defaults to install the script.
+The default is to install to /usr/local/mal-dnssearch. A symlink
+is then created in /usr/bin so that mal-dnssearch will most likely
+be in your PATH.
+
+To install use:
+``sudo make install''
+
+To uninstall use:
+``sudo make uninstall''
+
+SUPPORTED LOGS (parses DNS names only):
 
 -a ARGUS - file, requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN
 -b BRO-IDS - dns.log file
@@ -22,7 +35,7 @@ Your log not supported? E-mail me a sample, I'll add it.
 
 CUSTOM LOG (IP parsing):
 
--z Custom file - with IP addresses, one per line. 
+-z Custom file - with IP addresses, one per line.
 Use in conjuction with the IP malware host lists below.
 
 SUPPORTED MALWARE HOST LISTS:
@@ -41,8 +54,8 @@ Default is http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
 -9 http://www.ciarmy.com/list/ci-badguys.txt (IP)
 -M https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
 
-TODO (not ranked) [~~DONE~~]: 
-1. ~~Add iptables, PF, and IPFW support to block matches~~ 
+TODO (not ranked) [~~DONE~~]:
+1. ~~Add iptables, PF, and IPFW support to block matches~~
 2. ~~Allow multiple log files and types to be specified at once~~
 3. ~~Add/fix counters~~
 4. More efficient parsing
@@ -57,7 +70,7 @@ TODO (not ranked) [~~DONE~~]:
 13. Rewrite script in Python
 14. Add option to download list only
 15. See if you can read from the Collective Intelligence Framework database
-16. Try optimizing with Gnu Parallel 
+16. Try optimizing with Gnu Parallel
 17. See if there's a Team Cymru list to match against.
 18. Add option to combine all IP and DNS lists into a single IP or DNS list. e.g. --all [dns|ip]
 19. Add lists:
@@ -68,7 +81,7 @@ TODO (not ranked) [~~DONE~~]:
 	* https://reputation.alienvault.com/reputation.data
 20. Read from exported Sguil event logs
 21. Rewrite log options to use -L <log type>
-22. Rewrite malware host lists options to -M <list>  
+22. Rewrite malware host lists options to -M <list>
 
 USAGE:
 
