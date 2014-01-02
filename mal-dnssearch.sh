@@ -32,34 +32,43 @@ Compare DNS/IP logs against known mal-ware host lists.
 Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 
      Log File Options:
-	-a 	ARGUS file
-        -b      BRO-IDS dns.log file
-	-c      Custom file - DNS, one per line
-        -d      Tcpdump pcap file
-	-e      /etc/hosts file
-	-i	ISC's BIND query log file
-        -p      PassiveDNS log file
-	-o      SonicWall NSA log file
-	-s      Tshark pcap file
-	-t      HttPry log file
-	-z      Custom file - IP, one per line
+        -T <type>	Type(s) of log e.g. \`\`-T bro''
+	-f <file>	Log file e.g. \`\`-f /opt/bro/logs/current/dns.log''
+
+        Type:      |    Description:
+	argus 	   - 	ARGUS file
+	bind       -    ISC's BIND query log file
+        bro        - 	BRO-IDS dns.log file
+	custom-ip  -	Custom file - IP, one per line
+	custom-dns -	Custom file - DNS, one per line
+	hosts      -    /etc/hosts file
+	httpry     -    HttPry log file
+        passivedns -    PassiveDNS log file
+        tcpdump    -	Tcpdump pcap file
+	tshark     -	Tshark pcap file
+	sonicwall  -	SonicWall NSA log file
+		   |
 
       Malware List Options:
-	-0      Custom, one IP entry per line
-	-1 	http://labs.snort.org/feeds/ip-filter.blf (IP)
-	-2 	http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt (IP)
- 	-3      http://reputation.alienvault.com/reputation.generic (BIG file) (IP)
-	-4      http://rules.emergingthreats.net/open/suricata/rules/botcc.rules (IP)
-	-5      http://rules.emergingthreats.net/open/suricata/rules/tor.rules (IP)
-	-6      http://rules.emergingthreats.net/blockrules/emerging-rbn.rules (IP)
-	-7 	http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
-	-8	http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
-	-9 	http://www.ciarmy.com/list/ci-badguys.txt (IP)
-        -M      https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
+      -M <list>		Name of list, e.g. \`\`-M snort''
+
+	List:      |     Description:
+	custom 	   -     Custom, one IP entry per line
+	snort 	   -     http://labs.snort.org/feeds/ip-filter.blf (IP)
+	et_ips	   -     http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt (IP)
+ 	alienvault -     http://reputation.alienvault.com/reputation.generic (BIG file) (IP)
+	botcc      -     http://rules.emergingthreats.net/open/suricata/rules/botcc.rules (IP)
+	tor        -     http://rules.emergingthreats.net/open/suricata/rules/tor.rules (IP)
+	rbn        -     http://rules.emergingthreats.net/blockrules/emerging-rbn.rules (IP)
+	malhosts   -     http://www.malwaredomainlist.com/hostslist/hosts.txt (DNS)
+	malips	   -     http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
+	ciarmy 	   -     http://www.ciarmy.com/list/ci-badguys.txt (IP)
+	mayhemic   -     http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
+        mandiant   -     https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
 
       Processing Options:
 	-h      help (this message)
-	-f      insert firewall rules (blocks) e.g. iptables,pf,ipfw
+	-F      insert firewall rules (blocks) e.g. iptables,pf,ipfw
         -l      Log stdout & stderr to <file>
 	-N 	Skip file download
 	-v	Verbose, echo each line line from mallist
@@ -67,8 +76,8 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
         -w      Whitelist, accept <file> or regex
                 e.g. -w "dont|match|these"
 
-Usage: $0 <logoption> <logfile> [-w whitelist] [-l out.log] [-f fw] [-#] [-N] [-vV]
-e.g. $0 -p /var/log/pdns.log -w "facebook|google" -f iptables -l output.log
+Usage: $0 -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out.log] [-F fw] [-#] [-N] [-vV]
+e.g. $0 -T passivedns -f /var/log/pdns.log -w "facebook|google" -F iptables -l output.log
 EOF
 }
 
@@ -195,64 +204,109 @@ if [ ! $# -gt 1 ]; then
 fi
 
 # option and argument handling
-while getopts "ha:b:c:d:e:f:g:i:l:MNp:o:s:t:vVw:z:0:123456789" OPTION
+while getopts "hf:F:l:M:NT:vVw:" OPTION
 do
      case $OPTION in
-	 a)
-	     ARGUS=1
-	     ARGUSFILE="$OPTARG"
-	     ;;
-         b)
-             BRO=1
-             BROFILE="$OPTARG"
-             ;;
-	 c)
-	     CUSTOM=1
-	     CUSTOMFILE="$OPTARG"
-	     ;;
-	 d)
-             TCPDUMP=1
-             TCPDUMPFILE="$OPTARG"
-             ;;
-	 e)
-	     HOSTS=1
-	     HOSTSFILE="$OPTARG"
-	     ;;
-	 f)
+	 F)
 	     FWTRUE=1
 	     FW="$OPTARG"
+	     ;;
+         f)
+	     FILE="$OPTARG"
 	     ;;
          h)
              usage
              exit 1
              ;;
-	 i)
-	     BIND=1
-	     BINDFILE="$OPTARG"
-	     ;;
          l)
              LOG=1
              LOGFILE="$OPTARG"
              ;;
+         M)
+	     if [[ "$OPTARG" == snort ]]; then
+	     		MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
+	        	MALHOSTFILE="ip-filter.blf"
+	     elif [[ "$OPTARG" == et_ips ]]; then
+			MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt"
+       		  	MALHOSTFILE="compromised-ips.txt"
+	     elif [[ "$OPTARG" == alienvault ]]; then
+			MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
+       		  	MALHOSTFILE="reputation.generic"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == botcc ]]; then
+		        MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
+		  	MALHOSTFILE="botcc.rules"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == tor ]]; then
+			MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"
+		        MALHOSTFILE="tor.rules"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == rbn ]]; then
+			MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
+		       	MALHOSTFILE="emerging-rbn.rules"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == malhosts ]]; then
+			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
+		        MALHOSTFILE="hosts.txt"
+			PARSE="$OPTION"
+			DNS=1
+	     elif [[ "$OPTARG" == malips ]]; then
+			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
+       		  	MALHOSTFILE="ip.txt"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == ciarmy ]]; then
+			MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
+    		        MALHOSTFILE="ci-badguys.txt"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == mandiant ]]; then
+			MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
+		        MALHOSTFILE="mandiant_apt1.dns"
+			PARSE="$OPTION"
+			DNS=1
+	     elif [[ "$OPTARG" == mayhemic ]]; then
+			MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
+			MALFILEDEFAULT="malhosts.txt"
+			PARSE="$OPTION"
+	     elif [[ "$OPTARG" == custom ]]; then
+			MALHOSTURL="none"
+                	MALHOSTFILE="$OPTARG"
+	        	PARSE="$OPTION"
+	     else
+		      echo "Unknown list!"
+		      exit 1
+	     fi
+	     ;;
 	 N)
              DOWNLOAD="NO"
              ;;
-         p)
-             PDNS=1
-             PDNSFILE="$OPTARG"
-             ;;
-	 o)
-	     SWALL=1
-	     SWALLFILE="$OPTARG"
-	     ;;
-	 s)
-    	     TSHARK=1
-  	     TSHARKFILE="$OPTARG"
-	     ;;
-	 t)
-	     HTTPRY=1
-             HTTPRYFILE="$OPTARG"
-	     ;;
+	 T)
+	    	if [[ "$OPTARG" == argus ]]; then
+			 ARGUS=1
+	     	elif [[ "$OPTARG" == bind ]]; then
+		      	 BIND=1
+	     	elif [[ "$OPTARG" ==  bro ]]; then
+		     	 BRO=1
+	     	elif [[ "$OPTARG" == custom-ip ]]; then
+			 CUSTOMIP=1
+	     	elif [[ "$OPTARG" == custom-dns ]]; then
+			 CUSTOMDNS=1
+	     	elif [[ "$OPTARG" == hosts ]]; then
+		     	 HOSTS=1
+	     	elif [[ "$OPTARG" == httpry ]]; then
+		     	 HTTPRY=1
+	     	elif [[ "$OPTARG" == passivedns ]]; then
+		     	 PDNS=1
+	     	elif [[ "$OPTARG" == sonicwall ]]; then
+		     	 SWALL=1
+	     	elif [[ "$OPTARG" == tcpdump ]]; then
+		     	 TCPDUMP=1
+	     	elif [[ "$OPTARG" == tshark ]]; then
+		     	 TSHARK=1
+	     	else
+		         echo "Unknown type!"
+		         exit 1
+	        fi
+	        ;;
          w)
              WLISTDOM="$OPTARG"
              ;;
@@ -262,66 +316,6 @@ do
 	 V)
              VERBOSE=2
 	     ;;
-	 z)
-	     IP=1
-	     IPFILE="$OPTARG"
-	     ;;
-	 0)
-	     MALHOSTURL="none"
-	     MALHOSTFILE="$OPTARG"
-	     PARSE="$OPTION"
-             ;;
-	 1)
-	     MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
-	     MALHOSTFILE="ip-filter.blf"
-             ;;
-	 2)
-	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt"
-	     MALHOSTFILE="compromised-ips.txt"
-             ;;
-	 3)
-	     MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
-	     MALHOSTFILE="reputation.generic"
-	     PARSE="$OPTION"
-             ;;
-	 4)
-	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
-	     MALHOSTFILE="botcc.rules"
-	     PARSE="$OPTION"
-             ;;
-	 5)
-	     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"
-	     MALHOSTFILE="tor.rules"
-	     PARSE="$OPTION"
-             ;;
-	 6)
-	     MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
-	     MALHOSTFILE="emerging-rbn.rules"
-	     PARSE="$OPTION"
-             ;;
-	 7)
-	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
-	     MALHOSTFILE="hosts.txt"
-	     PARSE="$OPTION"
-	     DNS=1
-             ;;
-	 8)
-	     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
-	     MALHOSTFILE="ip.txt"
-	     PARSE="$OPTION"
-             ;;
-	 9)
-	     MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
-	     MALHOSTFILE="ci-badguys.txt"
-	     PARSE="$OPTION"
-             ;;
-	 M)
-	     MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
-	     MALHOSTFILE="mandiant_apt1.dns"
-	     PARSE="$OPTION"
-	     DNS=1
-             ;;
-
          \?)
              exit 1
              ;;
@@ -352,56 +346,56 @@ fi
 
 # dns meat
 if [ "$BRO" == 1 ]; then
-	FILE=$BROFILE; PROG=BRO-IDS; COUNT=$(awk 'END { print NR }' $BROFILE)
-	compare "bro-cut query < \$BROFILE | $(eval wlistchk) | sort | uniq"
+	PROG=BRO-IDS; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "bro-cut query < \$FILE | $(eval wlistchk) | sort | uniq"
 fi
 if [ "$PDNS" == 1 ]; then
-	FILE=$PDNSFILE; PROG=PassiveDNS; COUNT=$(awk 'END { print NR }' $PDNSFILE)
-	compare "sed 's/||/:/g' < \$PDNSFILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | sort | uniq"
+	PROG=PassiveDNS; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | sort | uniq"
 fi
 if [ "$HTTPRY" == 1 ]; then
-	FILE=$HTTPRYFILE; PROG=HttPry; COUNT=$(awk 'END { print NR }' $HTTPRYFILE)
-	compare "awk '{ print $7 }' < \$HTTPRYFILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
+	PROG=HttPry; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | sort | uniq"
 fi
 if [ "$TSHARK" == 1 ]; then
-	FILE=$TSHARKFILE; PROG=TShark; COUNT=$(awk 'END { print NR }' $TSHARKFILE)
-	compare "tshark -nr \$TSHARKFILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
+	PROG=TShark; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
 	| $(eval wlistchk) | sed -e '/#/d' | sort | uniq"
 fi
 if [ "$TCPDUMP" == 1 ]; then
-	FILE=$TCPDUMPFILE; PROG=TCPDump; COUNT=$(awk 'END { print NR }' $TCPDUMPFILE)
-	compare "tcpdump -nnr \$TCPDUMPFILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
+	PROG=TCPDump; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
 	 | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| sort | uniq"
 fi
 if [ "$ARGUS" == 1 ]; then
-	FILE=$ARGUSFILE; PROG=ARGUS; COUNT=$(awk 'END { print NR }' $ARGUSFILE)
-	compare "ra -nnr \$ARGUSFILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
+	PROG=ARGUS; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 	sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | sort | uniq"
 fi
 if [ "$BIND" == 1 ]; then
-	FILE=$BINDFILE; PROG=BIND; COUNT=$(awk 'END { print NR }' $BINDFILE)
-	compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$BINDFILE | $(eval wlistchk) \
+	PROG=BIND; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \
 	| grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | sort | uniq"
 fi
 if [ "$SWALL" == 1 ]; then
-	FILE=$SWALLFILE; PROG=SonicWALL; COUNT=$(awk 'END { print NR }' $SWALLFILE)
-	compare "grep -h -o 'dstname=.* a' \$SWALLFILE 2>/dev/null | $(eval wlistchk) \
+	PROG=SonicWALL; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
 	| sed -e 's/dstname=//' -e 's/ a.*//' | sort | uniq"
 fi
 if [ "$HOSTS" == 1 ]; then
-	FILE=$HOSTSFILE; PROG="Hosts File"; COUNT=$(awk 'END { print NR }' $HOSTSFILE)
-	compare "sed -e '/^$/d' -e '/^#/d' < \$HOSTSFILE | $(eval wlistchk) | cut -f3 \
+	PROG="Hosts File"; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "sed -e '/^$/d' -e '/^#/d' < \$FILE | $(eval wlistchk) | cut -f3 \
 	| awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | sort | uniq"
 fi
-if [ "$CUSTOM" == 1 ]; then
-	FILE=$CUSTOMFILE; PROG="Custom File"; COUNT=$(awk 'END { print NR }' $CUSTOMFILE)
-	compare "cat \$CUSTOMFILE | $(eval wlistchk) | sort | uniq"
+if [ "$CUSTOMDNS" == 1 ]; then
+	PROG="Custom DNS File"; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "cat \$FILE | $(eval wlistchk) | sort | uniq"
 fi
 # ip meat
-if [ "$IP" == 1 ]; then
+if [ "$CUSTOMIP" == 1 ]; then
 	download
 	{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
 	parse
-	FILE=$IPFILE; PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $IPFILE)
-	compare "cat $IPFILE | $(eval wlistchk) | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq"
+	PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $FILE)
+	compare "cat $FILE | $(eval wlistchk) | sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq"
 fi
