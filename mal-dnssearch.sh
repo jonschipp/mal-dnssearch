@@ -174,13 +174,13 @@ do
 let tally++
 
 	if [ ${VERBOSE:-0} -gt 0 ]; then
-		echo $bad_host
+		echo "-log: $bad_host"
 	fi
 
 		for host in $(eval "$1")
 		do
 			if [ ${VERBOSE:-0} -gt 1 ]; then
-				echo $host
+				echo "---list: $host"
 			fi
 			if [ "$bad_host" == "$host" ]; then
 				echo "[+] Found - host '"$host"' matches "
