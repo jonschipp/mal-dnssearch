@@ -1,9 +1,10 @@
 mal-dnssearch
 
-Compare log files with DNS names (default) or IPs against an updated and compiled malhost list.
-Downloads malhost lists and compares each entry to log file entries.
+Mal-dnssearch is a robust shell script that compares IP and DNS
+addresses in logs against malware (and related) reputation data.
+It reports any matches and supports many log formats.
 
-Ran with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu
+Tested with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu.
 
 INSTALLATION:
 
