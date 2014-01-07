@@ -20,7 +20,7 @@ Designed to work with mal-dnssearch.
      Options:
         -T <type>	Intel::Type '(ip/dns)' e.g. \`\`-T ip''
 	-f <file>	Read parsed list from file (if option is ommited, use stdin)
-	-i <location>	Location seen in Bro (def: blank)
+	-i <location>	Location seen in Bro (def: null)
 	-n <boolean>	Call Notice Framework on matches, 'true/false' (def: false)
 	-s <name>	Name for data source (def: mal-dnssearch)
 
