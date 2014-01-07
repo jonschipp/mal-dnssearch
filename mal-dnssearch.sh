@@ -70,8 +70,8 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 	-F      insert firewall rules (blocks) e.g. iptables,pf,ipfw
         -l      Log stdout & stderr to <file>
 	-N 	Skip file download
-	-v	Verbose, echo each line line from mallist
-	-V      More verbose, echo each line read from log + -v
+	-v	Verbose, print each line line from malware list
+	-V      Verbose, print each line read from log file
         -w      Whitelist, accept <file> or regex
                 e.g. -w "dont|match|these"
 
@@ -172,14 +172,14 @@ while read bad_host
 do
 let tally++
 
-	if [ ${VERBOSE:-0} -gt 0 ]; then
-		echo "-log: $bad_host"
+	if [ ${VERBOSELIST:-0} -eq 1 ]; then
+		echo "-list: $bad_host"
 	fi
 
 		for host in $(eval "$1")
 		do
-			if [ ${VERBOSE:-0} -gt 1 ]; then
-				echo "---list: $host"
+			if [ ${VERBOSELOG:-0} -eq 1 ]; then
+				echo "---log: $host"
 			fi
 			if [ "$bad_host" == "$host" ]; then
 				echo "[+] Found - host '"$host"' matches "
@@ -201,6 +201,12 @@ if [ ! $# -gt 1 ]; then
 	usage
 	exit 1
 fi
+
+# Initializations
+FWTRUE=0
+LOG=0
+VERBOSELIST=0
+VERBOSELOG=0
 
 # option and argument handling
 while getopts "hf:F:l:M:NT:vVw:" OPTION
@@ -306,10 +312,10 @@ do
              WLISTDOM="$OPTARG"
              ;;
 	 v)
-             VERBOSE=1
+             VERBOSELIST=1
 	     ;;
 	 V)
-             VERBOSE=2
+             VERBOSELOG=1
 	     ;;
          \?)
              exit 1
