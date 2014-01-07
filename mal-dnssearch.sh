@@ -70,6 +70,7 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 	-F      insert firewall rules (blocks) e.g. iptables,pf,ipfw
         -l      Log stdout & stderr to <file>
 	-N 	Skip file download
+	-p 	Print parsed mal-ware list to stdout e.g. \`\`-M ciarmy -p | prog''
 	-v	Verbose, print each line line from malware list
 	-V      Verbose, print each line read from log file
         -w      Whitelist, accept <file> or regex
@@ -83,7 +84,7 @@ EOF
 download()
 {
 if [ "$DOWNLOAD" != "NO" ]; then
-	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
+	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n" 1>&2
 	if command -v curl >/dev/null 2>&1; then
 		curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
@@ -105,7 +106,7 @@ if [ "$DOWNLOAD" != "NO" ]; then
 		exit 1
 	fi
 fi
-total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }' )
+total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }')
 }
 
 stats()
@@ -142,6 +143,12 @@ if [ "$PARSE" == "malhosts" ]; then
 fi
 if [ "$PARSE" == "malips" ] || [ "$PARSE" == "mandiant" ]; then
 	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
+fi
+
+if [ $PIPE -eq 1 ]; then
+	echo -e "\n\n[*] Stdout below for piping to a file or program\n" 1>&2
+	cat $MALHOSTFILE
+	exit 0
 fi
 }
 
@@ -205,11 +212,12 @@ fi
 # Initializations
 FWTRUE=0
 LOG=0
+PIPE=0
 VERBOSELIST=0
 VERBOSELOG=0
 
 # option and argument handling
-while getopts "hf:F:l:M:NT:vVw:" OPTION
+while getopts "hf:F:l:pM:NT:vVw:" OPTION
 do
      case $OPTION in
 	 F)
@@ -280,6 +288,9 @@ do
 	 N)
              DOWNLOAD="NO"
              ;;
+	 p)
+	     PIPE=1
+	     ;;
 	 T)
 	    	if [[ "$OPTARG" == argus ]]; then
 			 ARGUS=1
@@ -323,7 +334,7 @@ do
      esac
 done
 
-echo -e "\nPID: $$"
+echo -e "\nPID: $$" 1>&2
 
 # vars
 MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
