@@ -92,15 +92,17 @@ USAGE:
 Non-mandatory options:
 -w accept file with one entry per line or grep regex e.g. -w "dont|match|these", -w whitelist.txt
 -l Log stdout & stderr to file  e.g. -l /var/log/output.log
--F block matched hosts w/ firewall, 3 available: iptables, pf, ipfw e.g. -F pf
+-F block matched hosts w/ firewall, 3 available: iptables, pf, ipfw e.g. ``-F pf''
 -N skip file download
--v verbose mode, echo echo line from malhost list, for debugging
--V extended verbose mode, echo each line from the log file in addition to the malhost list, for debugging
--z specify an IP list instead of a DNS. Use in conjuction with -# for choice of mal list
+-p Pass downloaded file to stdout to pipe to other programs e.g.
+	``-M mayhemic -p | mal-dns2bro -T dns > mayhemic.intel''
+-v Print line from mal-host list as its processed for debugging
+-V Print each line from the log file as its processed for debugging
 Usage: ./mal-dnssearch -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out.log] [-F firewall] [-N] [-vV]
 
 EXAMPLES:
 
+./mal-dnssearch.sh -M mandiant (Downloads file only)
 ./mal-dnsearch.sh -T tshark -f dns.pcap
 ./mal-dnssearch.sh -T passivedns -f /var/log/passivedns/dmz.log -w whitelist.txt
 ./mal-dnsearch.sh -T bro -f /usr/local/bro/logs/current/dns.log \
