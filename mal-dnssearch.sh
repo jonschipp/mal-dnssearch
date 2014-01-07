@@ -106,7 +106,13 @@ if [ "$DOWNLOAD" != "NO" ]; then
 		exit 1
 	fi
 fi
-total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }')
+
+if [ -f ${MALHOSTFILE:-$MALFILEDEFAULT} ]; then
+	total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }')
+else
+	echo -e "\n[*] File doesn't exist (Is it in the current working directory?)..Exiting."
+	exit 1
+fi
 }
 
 stats()
