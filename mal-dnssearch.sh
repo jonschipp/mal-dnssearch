@@ -218,6 +218,8 @@ fi
 # Initializations
 FWTRUE=0
 LOG=0
+LOG_SET=0
+FILE_SET=0
 PIPE=0
 VERBOSELIST=0
 VERBOSELOG=0
@@ -232,6 +234,7 @@ do
 	     ;;
          f)
 	     FILE="$OPTARG"
+	     FILE_SET=1
 	     ;;
          h)
              usage
@@ -324,6 +327,7 @@ do
 		         echo "Unknown type!"
 		         exit 1
 	        fi
+		LOG_SET=1
 	        ;;
          w)
              WLISTDOM="$OPTARG"
@@ -339,6 +343,16 @@ do
              ;;
      esac
 done
+
+# Check for option dependency
+if [ $LOG_SET -eq 1 ] && [ $FILE_SET -eq 0 ]; then
+	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
+	exit 1
+
+elif [ $FILE_SET -eq 1 ] && [ $LOG_SET -eq 0 ]; then
+	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
+	exit 1
+fi
 
 echo -e "\nPID: $$" 1>&2
 
