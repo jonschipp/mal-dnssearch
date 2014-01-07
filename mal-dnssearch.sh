@@ -53,7 +53,6 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
       -M <list>		Name of list, e.g. \`\`-M snort''
 
 	List:      |     Description:
-	custom 	   -     Custom, one IP entry per line
 	snort 	   -     http://labs.snort.org/feeds/ip-filter.blf (IP)
 	et_ips	   -     http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt (IP)
  	alienvault -     http://reputation.alienvault.com/reputation.generic (BIG file) (IP)
@@ -83,7 +82,7 @@ EOF
 
 download()
 {
-if [ "$DOWNLOAD" != "NO" ] && [ "$PARSE" != "0"  ]; then
+if [ "$DOWNLOAD" != "NO" ]; then
 	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n"
 	if command -v curl >/dev/null 2>&1; then
 		curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
@@ -127,21 +126,21 @@ fi
 
 parse()
 {
-if [ "$PARSE" == "3" ]; then
+if [ "$PARSE" == "alienvault" ]; then
 	{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
-if [ "$PARSE" == "4" ] || [ "$PARSE" == "5" ] || [ "$PARSE" == "6" ]; then
+if [ "$PARSE" == "botcc" ] || [ "$PARSE" == "tor" ] || [ "$PARSE" == "rbn" ]; then
 	if [ "$DOWNLOAD" != "NO" ]; then
-		{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' -e 's/\,/\n/g' \
+		{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' | awk 'BEGIN { RS="," } { print }' \
 		| sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
 	fi
 fi
-if [ "$PARSE" == "7" ]; then
+if [ "$PARSE" == "malhosts" ]; then
 	if [ "$DOWNLOAD" != "NO" ]; then
 		{ rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
 	fi
 fi
-if [ "$PARSE" == "8" ] || [ "$PARSE" == "M" ]; then
+if [ "$PARSE" == "malips" ] || [ "$PARSE" == "mandiant" ]; then
 	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 }
@@ -232,47 +231,43 @@ do
 	     elif [[ "$OPTARG" == alienvault ]]; then
 			MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
        		  	MALHOSTFILE="reputation.generic"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == botcc ]]; then
 		        MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
 		  	MALHOSTFILE="botcc.rules"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == tor ]]; then
 			MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"
 		        MALHOSTFILE="tor.rules"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == rbn ]]; then
 			MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
 		       	MALHOSTFILE="emerging-rbn.rules"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == malhosts ]]; then
 			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
 		        MALHOSTFILE="hosts.txt"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 			DNS=1
 	     elif [[ "$OPTARG" == malips ]]; then
 			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
        		  	MALHOSTFILE="ip.txt"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == ciarmy ]]; then
 			MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
     		        MALHOSTFILE="ci-badguys.txt"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 	     elif [[ "$OPTARG" == mandiant ]]; then
 			MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
 		        MALHOSTFILE="mandiant_apt1.dns"
-			PARSE="$OPTION"
+			PARSE="$OPTARG"
 			DNS=1
 	     elif [[ "$OPTARG" == mayhemic ]]; then
-			MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
-			MALFILEDEFAULT="malhosts.txt"
-			PARSE="$OPTION"
-	     elif [[ "$OPTARG" == custom ]]; then
-			MALHOSTURL="none"
-                	MALHOSTFILE="$OPTARG"
-	        	PARSE="$OPTION"
+			MALHOSTURL="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
+			MALHOSTFILE="malhosts.txt"
+			PARSE="$OPTARG"
 	     else
-		      echo "Unknown list!"
+		      echo "Unknown reputation list!"
 		      exit 1
 	     fi
 	     ;;
@@ -328,9 +323,8 @@ echo -e "\nPID: $$"
 MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
 MALFILEDEFAULT="malhosts.txt"
 
-if [ -z "$MALHOSTURL" ]; then
-	download
-fi
+download
+parse
 
 # logging
 if [ "$LOG" == 1 ]; then
@@ -338,13 +332,7 @@ if [ "$LOG" == 1 ]; then
 	echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
-# hack for -7 and -M, will fix later
-if [ "$DNS" == "1" ]; then
-	download
-	parse
-fi
-
-# dns meat
+# DNS parsing for log files
 if [ "$BRO" == 1 ]; then
 	PROG=BRO-IDS; COUNT=$(awk 'END { print NR }' $FILE)
 	compare "bro-cut query < \$FILE | $(eval wlistchk) | sort | uniq"
@@ -391,9 +379,9 @@ if [ "$CUSTOMDNS" == 1 ]; then
 	PROG="Custom DNS File"; COUNT=$(awk 'END { print NR }' $FILE)
 	compare "cat \$FILE | $(eval wlistchk) | sort | uniq"
 fi
-# ip meat
+
+# IP parsing for log files
 if [ "$CUSTOMIP" == 1 ]; then
-	download
 	{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
 	parse
 	PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $FILE)
