@@ -94,7 +94,7 @@ if [ "$DOWNLOAD" != "NO" ]; then
 		fi
 
 	elif command -v wget >/dev/null 2>&1; then
-		wget --no-check certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+		wget --no-check-certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
 		if [ "$?" -gt 0 ]; then
 			echo -e "\nDownload Failed! - Check URL"
