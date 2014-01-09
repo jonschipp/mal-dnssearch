@@ -23,8 +23,9 @@ Designed to work with mal-dnssearch.
 	-i <location>	Location seen in Bro (def: null)
 	-n <boolean>	Call Notice Framework on matches, 'true/false' (def: false)
 	-s <name>	Name for data source (def: mal-dnssearch)
+	-u <url>	URL of feed (if applicable)
 
-Usage: $0 -T <type> [ -f <logfile> ] [ -s <name> ] [ -n <boolean> ] [ -i <location> ]
+Usage: $0 -T <type> [ -f <logfile> ] [ -s <name> ] [ -n <boolean> ] [ -i <location> ] [ -u <url ]
 e.g.
 > ./mal-dnssearch.sh -M mayhemic -p | $0 -T dns > mayhemic.intel
 > $0 -T dns -f apt1.list -s mandiant -n true -i HTTP::IN_HOST_HEADER > mandiant.intel
@@ -43,13 +44,13 @@ format() {
 
 	echo -e "\n[*] Waiting for input.. (Did you pipe stdin or specify a file?)\n" 1>&2
 
-awk -v type=$TYPE -v source=$SOURCE -v notice=$NOTICE -v if_in=$IF_IN  'BEGIN \
+awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN  'BEGIN \
         {
-	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.do_notice\tmeta.if_in"
+	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in"
 	}
 	{
-		$2=type; $3=source; $4=notice; $5=if_in;
-		print $1"\t"$2"\t"$3"\t"$4"\t"$5;
+		$2=type; $3=source; $4=url; $5=notice; $6=if_in;
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6;
 	}'
 
 }
@@ -57,6 +58,7 @@ awk -v type=$TYPE -v source=$SOURCE -v notice=$NOTICE -v if_in=$IF_IN  'BEGIN \
 # Initializations
 SOURCE="mal-dnssearch"
 NOTICE="F"
+URL="-"
 IF_IN="-"
 ARGC=$#
 FILE_SET=0
@@ -64,7 +66,7 @@ TYPE_SET=0
 
 argcheck 1
 
-while getopts "hf:i:n:T:s:" OPTION
+while getopts "hf:i:n:T:s:u:" OPTION
 do
      case $OPTION in
          f)
@@ -102,6 +104,9 @@ do
 	 s)
  	     SOURCE="$OPTARG"
   	     ;;
+	 u)
+	     URL="$OPTARG"
+             ;;
         \?)
              exit 1
              ;;
