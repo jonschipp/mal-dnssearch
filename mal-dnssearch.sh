@@ -133,8 +133,8 @@ fi
 
 parse()
 {
-if [ "$PARSE" == "alienvault" ]; then
-	{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e 's/^#//' > $MALHOSTFILE; } < $MALHOSTFILE
+if [ "$PARSE" == "alienvault" ] || [ "$PARSE" == "mayhemic" ]; then
+	{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 if [ "$PARSE" == "botcc" ] || [ "$PARSE" == "tor" ] || [ "$PARSE" == "rbn" ]; then
 	if [ "$DOWNLOAD" != "NO" ]; then
