@@ -38,7 +38,7 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
         Type:      |    Description:
 	argus 	   - 	ARGUS file
 	bind       -    ISC's BIND query log file
-        bro 	   - 	BRO-IDS dns.log file
+        bro-dns    - 	BRO-IDS dns.log file
 	bro-conn   -    BRO-IDS conn.log file
 	custom-ip  -	Custom file - IP, one per line
 	custom-dns -	Custom file - DNS, one per line
@@ -306,8 +306,8 @@ do
 			 ARGUS=1
 	     	elif [[ "$OPTARG" == bind ]]; then
 		      	 BIND=1
-	     	elif [[ "$OPTARG" ==  bro ]]; then
-		     	 BRO=1
+	     	elif [[ "$OPTARG" ==  bro-dns ]]; then
+		     	 BRODNS=1
 		elif [[ "$OPTARG" == bro-conn ]]; then
 			 BROCONN=1
 	     	elif [[ "$OPTARG" == custom-ip ]]; then
@@ -373,7 +373,7 @@ if [ "$LOG" == 1 ]; then
 fi
 
 # DNS parsing for log files
-if [ "$BRO" == 1 ]; then
+if [ "$BRODNS" == 1 ]; then
 	PROG=BRO-IDS; COUNT=$(awk 'END { print NR }' $FILE)
 	compare "bro-cut query < \$FILE | $(eval wlistchk) | sort | uniq"
 fi
