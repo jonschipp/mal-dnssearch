@@ -71,7 +71,7 @@ TODO (not ranked) [~~DONE~~]:
 10. ~~Add skip download option~~
 11. Option to edit/change URLs in the script
 12. Add cron mode option
-13. Rewrite script in Python
+13. Rewrite script in Python or C
 14. Add option to download list only
 15. See if you can read from the Collective Intelligence Framework database
 16. Try optimizing with Gnu Parallel
@@ -86,6 +86,11 @@ TODO (not ranked) [~~DONE~~]:
 20. Read from exported Sguil event logs
 21. ~~Rewrite log options to use -L <log type>~~
 22. ~~Rewrite malware host lists options to -M <list>~~
+23. Replace awk with wc -l for line counting because it's much faster
+24. Sort and Unique each log
+25. Add apache logs
+26. Check bug in bro-dns log
+27. Fix "0 out of 0 entries matched" on second run bug
 
 USAGE:
 
