@@ -87,10 +87,9 @@ TODO (not ranked) [~~DONE~~]:
 21. ~~Rewrite log options to use -L <log type>~~
 22. ~~Rewrite malware host lists options to -M <list>~~
 23. Replace awk with wc -l for line counting because it's much faster
-24. Sort and Unique each log
-25. Add apache logs
-26. Check bug in bro-dns log
-27. Fix "0 out of 0 entries matched" on second run bug
+24. Add apache logs
+25. Fix "0 out of 0 entries matched" on second run bug
+26. Add whitelist option to mal-dns2bro
 
 USAGE:
 
