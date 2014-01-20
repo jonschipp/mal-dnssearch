@@ -387,53 +387,53 @@ fi
 
 # DNS parsing for log files
 if [ "$BRODNS" == 1 ]; then
-	PROG=BRO-DNS; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=BRO-DNS; COUNT=$(wc -l $FILE)
 	compare "bro-cut query < \$FILE | $(eval wlistchk) | unique"
 fi
 if [ "$BROCONN" == 1 ]; then
-	PROG=BRO-CONN; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=BRO-CONN; COUNT=$(wc -l $FILE)
 	compare "bro-cut id.orig_h id.resp_h < \$FILE | tr '\t' '\n' | $(eval wlistchk) | unique"
 fi
 if [ "$PDNS" == 1 ]; then
-	PROG=PassiveDNS; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=PassiveDNS; COUNT=$(wc -l $FILE)
 	compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | unique"
 fi
 if [ "$HTTPRY" == 1 ]; then
-	PROG=HttPry; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=HttPry; COUNT=$(wc -l $FILE)
 	compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | unique"
 fi
 if [ "$TSHARK" == 1 ]; then
-	PROG=TShark; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=TShark; COUNT=$(wc -l $FILE)
 	compare "tshark -nr \$FILE -R udp.port==53 -e dns.qry.name -T fields 2>/dev/null \
 	| $(eval wlistchk) | sed -e '/#/d' | unique"
 fi
 if [ "$TCPDUMP" == 1 ]; then
-	PROG=TCPDump; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=TCPDump; COUNT=$(wc -l $FILE)
 	compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
 	 | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| unique"
 fi
 if [ "$ARGUS" == 1 ]; then
-	PROG=ARGUS; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=ARGUS; COUNT=$(wc -l $FILE)
 	compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 	sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | unique"
 fi
 if [ "$BIND" == 1 ]; then
-	PROG=BIND; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=BIND; COUNT=$(wc -l $FILE)
 	compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \
 	| grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | unique"
 fi
 if [ "$SWALL" == 1 ]; then
-	PROG=SonicWALL; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG=SonicWALL; COUNT=$(wc -l $FILE)
 	compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
 	| sed -e 's/dstname=//' -e 's/ a.*//' | unique"
 fi
 if [ "$HOSTS" == 1 ]; then
-	PROG="Hosts File"; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG="Hosts File"; COUNT=$(wc -l $FILE)
 	compare "sed -e '/^$/d' -e '/^#/d' < \$FILE | $(eval wlistchk) | cut -f3 \
 	| awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | unique"
 fi
 if [ "$CUSTOMDNS" == 1 ]; then
-	PROG="Custom DNS File"; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG="Custom DNS File"; COUNT=$(wc -l $FILE)
 	compare "cat \$FILE | $(eval wlistchk) | unique"
 fi
 
@@ -441,6 +441,6 @@ fi
 if [ "$CUSTOMIP" == 1 ]; then
 	{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
 	parse
-	PROG="Custom IP File"; COUNT=$(awk 'END { print NR }' $FILE)
+	PROG="Custom IP File"; COUNT=$(wc -l $FILE)
 	compare "cat $FILE | $(eval wlistchk) | unique"
 fi
