@@ -36,8 +36,9 @@ a single line by itself.
 	-n <boolean>	Call Notice Framework on matches, 'true/false' (def: false)
 	-s <name>	Name for data source (def: mal-dnssearch)
 	-u <url>	URL of feed (if applicable)
+	-w <pattern>	Whitelist pattern (e.g. \`\`-w "192\.168"'', \`\`-w "bad|host|evil"''
 
-Usage: $0 -T <type> [ -f <logfile> ] [ -s <name> ] [ -n <boolean> ] [ -i <location> ] [ -u <url ]
+Usage: $0 -T <type> [ -f <logfile> ] [ -s <name> ] [ -n <boolean> ] [ -i <location> ] [ -u <url> ] [ -w <pattern> ]
 e.g.
 > ./mal-dnssearch.sh -M mayhemic -p | $0 -T dns > mayhemic.intel
 > $0 -T dns -f apt1.list -s mandiant -n true -i HTTP::IN_HOST_HEADER > mandiant.intel
@@ -67,6 +68,17 @@ awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_I
 
 }
 
+whitelist()
+{
+if [ -z $WHITELIST ]; then
+        echo "grep -v -i -E '___somestringthatwontmatch___'"
+elif [ -f $WHITELIST ]; then
+        echo "grep -v -i -f $WHITELIST"
+else
+        echo "grep -v -i -E '(somestringthatwontmatch|$WHITELIST)'"
+fi
+}
+
 # Initializations
 SOURCE="mal-dnssearch"
 NOTICE="F"
@@ -78,7 +90,7 @@ TYPE_SET=0
 
 argcheck 1
 
-while getopts "hf:i:n:T:s:u:" OPTION
+while getopts "hf:i:n:T:s:u:w:" OPTION
 do
      case $OPTION in
          f)
@@ -133,6 +145,9 @@ do
 	 u)
 	     URL="$OPTARG"
              ;;
+	 w)
+	     WHITELIST="$OPTARG"
+	     ;;
         \?)
              exit 1
              ;;
@@ -142,11 +157,11 @@ done
 if [ $TYPE_SET -eq 1 ]; then
 
 	if [ $FILE_SET -eq 0 ]; then
-		cat - | format
+		cat - | eval "$(eval whitelist)" | format
 	fi
 
 	if [ $FILE_SET -eq 1 ] && [ -f $FILE ]; then
-		cat $FILE | format
+		cat $FILE | eval "$(eval whitelist)" | format
 	fi
 
 else
