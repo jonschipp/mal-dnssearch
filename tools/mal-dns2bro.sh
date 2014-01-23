@@ -6,7 +6,9 @@ usage()
 cat <<EOF
 
 Prepares a reputation list for Bro's Intel Framework.
-Designed to work with mal-dnssearch.
+Designed to work with mal-dnssearch, but will work with
+any list of Bro indicator types where each entry is on
+a single line by itself.
 
 	Add lines to local.bro or similar to load the Intel Framework:
 	@load frameworks/intel/seen
