@@ -18,7 +18,17 @@ Designed to work with mal-dnssearch.
 	    };
 
      Options:
-        -T <type>	Intel::Type '(ip/dns)' e.g. \`\`-T ip''
+        -T <type>	Intel::Type value or short name (e.g. \`\`-T ip'', \`\`-T Intel::ADDR'')
+			Intel::ADDR		ip
+			Intel::DOMAIN		dns
+		       	Intel::URL		url
+			Intel::SOFTWARE		software
+			Intel::EMAIL 		e-mail
+			Intel::USER_NAME	user
+			Intel::FILE_HASH	filehash
+			Intel::FILE_NAME	filename
+			Intel::CERT_HASH	certhash
+
 	-f <file>	Read parsed list from file (if option is ommited, use stdin)
 	-i <location>	Location seen in Bro (def: null)
 	-n <boolean>	Call Notice Framework on matches, 'true/false' (def: false)
@@ -91,10 +101,24 @@ do
              fi
  	     ;;
 	 T)
-	     if [[ "$OPTARG" == ip ]]; then
+	     if [[ "$OPTARG" == ip ]] || [[ "$OPTARG" == "Intel::ADDR" ]]; then
              	     TYPE=Intel::ADDR
-	     elif [[ "$OPTARG" == dns ]]; then
+	     elif [[ "$OPTARG" == dns ]] || [[ "$OPTARG" == "Intel::DOMAIN" ]]; then
 		     TYPE=Intel::DOMAIN
+	     elif [[ "$OPTARG" == e-mail ]] || [[ "$OPTARG" == "Intel::EMAIL" ]]; then
+		     TYPE=Intel::EMAIL
+	     elif [[ "$OPTARG" == url ]] || [[ "$OPTARG" == "Intel::URL" ]]; then
+		     TYPE=Intel::URL
+	     elif [[ "$OPTARG" == software ]] || [[ "$OPTARG" == "Intel::SOFTWARE" ]]; then
+		     TYPE=Intel::SOFTWARE
+	     elif [[ "$OPTARG" == user ]] || [[ "$OPTARG" == "Intel::USER_NAME" ]]; then
+		     TYPE=Intel::USER_NAME
+	     elif [[ "$OPTARG" == filehash ]] || [[ "$OPTARG" == "Intel::FILE_HASH" ]]; then
+		     TYPE=Intel::FILE_HASH
+	     elif [[ "$OPTARG" == filename ]] || [[ "$OPTARG" == "Intel::FILE_NAME" ]]; then
+		     TYPE=Intel::FILE_NAME
+	     elif [[ "$OPTARG" == certhash ]] || [[ "$OPTARG" == "Intel::CERT_HASH" ]]; then
+		     TYPE=Intel::CERT_HASH
 	     else
 		     echo "Unknown type!"
                      exit 1
