@@ -37,6 +37,7 @@ a single line by itself.
 	-s <name>	Name for data source (def: mal-dnssearch)
 	-u <url>	URL of feed (if applicable)
 	-w <pattern>	Whitelist pattern (e.g. \`\`-w "192\.168"'', \`\`-w "bad|host|evil"''
+			Or set \$WHITELIST in your shell (e.g. \`\`export WHITELIST="you|get|clipped"'')
 
 Usage: $0 -T <type> [ -f <logfile> ] [ -s <name> ] [ -n <boolean> ] [ -i <location> ] [ -u <url> ] [ -w <pattern> ]
 e.g.
@@ -146,7 +147,9 @@ do
 	     URL="$OPTARG"
              ;;
 	 w)
-	     WHITELIST="$OPTARG"
+	     if [ -z $WHITELIST ]; then
+		     WHITELIST="$OPTARG"
+	     fi
 	     ;;
         \?)
              exit 1
