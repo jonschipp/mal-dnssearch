@@ -85,7 +85,7 @@ EOF
 download()
 {
 if [ "$DOWNLOAD" != "NO" ]; then
-	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n" 1>&2
+	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
 	if command -v curl >/dev/null 2>&1; then
 		curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
@@ -192,7 +192,7 @@ compare()
 found=0
 tally=0
 
-echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} |$PROG Results| - ${FILE}: $COUNT total entries\n"
+echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${FILE}: $COUNT total entries\n"
 while read bad_host
 do
 let tally++
