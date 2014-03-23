@@ -207,7 +207,7 @@ let tally++
 				echo "---log: $host"
 			fi
 			if [ "$bad_host" == "$host" ]; then
-				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} Found - host '"$host"' matches "
+				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"$host"' matches "
 				let found++
 			if [ "$FWTRUE" == 1 ]; then
 				ipblock
@@ -218,7 +218,7 @@ let tally++
 		done
 
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
-echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} $found of $total entries matched from $MALHOSTFILE"
+echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}$MALHOSTFILE${END}"
 }
 
 # if less than 1 argument
