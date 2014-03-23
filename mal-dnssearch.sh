@@ -85,7 +85,7 @@ EOF
 download()
 {
 if [ "$DOWNLOAD" != "NO" ]; then
-	echo -e "\n[*] Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n" 1>&2
+	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...\n" 1>&2
 	if command -v curl >/dev/null 2>&1; then
 		curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
@@ -111,14 +111,14 @@ fi
 if [ -f ${MALHOSTFILE:-$MALFILEDEFAULT} ]; then
 	total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | awk 'END { print NR }')
 else
-	echo -e "\n[*] File doesn't exist (Is it in the current working directory?)..Exiting."
+	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} File doesn't exist (Is it in the current working directory?)..Exiting."
 	exit 1
 fi
 }
 
 stats()
 {
-echo " --> [-] stats: found: ${found}, current mal item: $tally of $total"
+echo -e " ${RED}-->${END} ${ORANGE}[${END}${RED}-${END}${ORANGE}]${END} stats: found: ${found}, current mal item: $tally of $total"
 }
 
 wlistchk()
@@ -153,7 +153,7 @@ if [ "$PARSE" == "malips" ] || [ "$PARSE" == "mandiant" ]; then
 fi
 
 if [ $PIPE -eq 1 ]; then
-	echo -e "\n\n[*] Stdout below for piping to a file or program\n" 1>&2
+	echo -e "\n\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Stdout below for piping to a file or program\n" 1>&2
 	cat $MALHOSTFILE
 	exit 0
 fi
@@ -192,7 +192,7 @@ compare()
 found=0
 tally=0
 
-echo -e "\n[*] |$PROG Results| - ${FILE}: $COUNT total entries\n"
+echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} |$PROG Results| - ${FILE}: $COUNT total entries\n"
 while read bad_host
 do
 let tally++
@@ -207,7 +207,7 @@ let tally++
 				echo "---log: $host"
 			fi
 			if [ "$bad_host" == "$host" ]; then
-				echo "[+] Found - host '"$host"' matches "
+				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} Found - host '"$host"' matches "
 				let found++
 			if [ "$FWTRUE" == 1 ]; then
 				ipblock
@@ -218,7 +218,7 @@ let tally++
 		done
 
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
-echo -e "--\n[=] $found of $total entries matched from $MALHOSTFILE"
+echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} $found of $total entries matched from $MALHOSTFILE"
 }
 
 # if less than 1 argument
@@ -236,6 +236,10 @@ PIPE=0
 DNS=0
 VERBOSELIST=0
 VERBOSELOG=0
+END='\e[m'
+RED='\e[0;31m'
+BLUE='\e[0;34m'
+ORANGE='\e[0;33m'
 
 # option and argument handling
 while getopts "hf:F:l:pM:NT:vVw:" OPTION
