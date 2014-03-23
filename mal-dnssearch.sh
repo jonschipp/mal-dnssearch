@@ -118,7 +118,7 @@ fi
 
 stats()
 {
-echo -e " ${RED}-->${END} ${ORANGE}[${END}${RED}-${END}${ORANGE}]${END} stats: found: ${found}, current mal item: $tally of $total"
+echo -e " ${RED}-->${END} ${ORANGE}[${END}${RED}-${END}${ORANGE}]${END} stats: found: ${RED}${found}${END}, current mal item: ${RED}$tally${END} of ${RED}$total${END}"
 }
 
 wlistchk()
@@ -192,7 +192,7 @@ compare()
 found=0
 tally=0
 
-echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${FILE}: $COUNT total entries\n"
+echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
 while read bad_host
 do
 let tally++
@@ -207,7 +207,7 @@ let tally++
 				echo "---log: $host"
 			fi
 			if [ "$bad_host" == "$host" ]; then
-				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"$host"' matches "
+				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
 				let found++
 			if [ "$FWTRUE" == 1 ]; then
 				ipblock
@@ -374,7 +374,7 @@ elif [ $FILE_SET -eq 1 ] && [ $LOG_SET -eq 0 ]; then
 	exit 1
 fi
 
-echo -e "\nPID: $$" 1>&2
+echo -e "\n${BLUE}PID${END}: ${ORANGE}$$${END}" 1>&2
 
 # vars
 MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
