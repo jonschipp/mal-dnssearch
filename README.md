@@ -4,14 +4,13 @@
 addresses in logs against malware (and related) reputation data. <br>
 It reports any matches and supports many log formats. <br>
 
-Tested with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu. <br>
+Tested with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu.
 
 ## Installation:
 
 Edit the Makefile or use the defaults to install the script. <br>
-The default is to install to `/usr/local/mal-dnssearch`. A symlink <br>
-is then created in /usr/bin so that mal-dnssearch will most likely <br>
-be in your PATH. <br>
+The *default* is to install to `/usr/local/mal-dnssearch`.
+A symlink is then created in /usr/bin so that mal-dnssearch will most likely be in your PATH.
 
 To install use:
 ```shell
@@ -115,7 +114,7 @@ mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_ap
 Usage: ./mal-dnssearch -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out.log] [-F firewall] [-N] [-vV]
 ```
 
-## Examples:
+### Examples:
 
 ```shell
 ./mal-dnssearch.sh -M mandiant (Downloads file only)
@@ -130,7 +129,7 @@ Usage: ./mal-dnssearch -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out
 ```
 
 ## Author:
-***Jon Schipp*** (keisterstash)
-[More info](https://sickbits.net/finding-malware-by-dns-cache-snooping/)
-jonschipp [ at ] Gmail dot com
+***Jon Schipp*** (keisterstash) <br>
+[More info](https://sickbits.net/finding-malware-by-dns-cache-snooping/) <br>
+jonschipp [ at ] Gmail dot com <br>
 `sickbits.net`, `jonschipp.com`
