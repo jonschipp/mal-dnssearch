@@ -236,10 +236,15 @@ PIPE=0
 DNS=0
 VERBOSELIST=0
 VERBOSELOG=0
-END='\e[m'
-RED='\e[0;31m'
-BLUE='\e[0;34m'
-ORANGE='\e[0;33m'
+END="$(tput sgr0)"
+UNDERLINE="$(tput smul)"
+YELLOW="$(tput setaf 3)"
+RED="$(tput setaf 1)"
+BLUE="$(tput setaf 4)"
+ORANGE=$(tput setaf 172)
+MAGENTA="$(tput setaf 5)"
+CYAN="$(tput setaf 6)"
+WHITE="$(tput setaf 7)"
 
 # option and argument handling
 while getopts "hf:F:l:pM:NT:vVw:" OPTION
