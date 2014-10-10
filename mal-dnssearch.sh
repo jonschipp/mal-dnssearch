@@ -149,7 +149,7 @@ if [ "$PARSE" == "malhosts" ]; then
 	fi
 fi
 if [ "$PARSE" == "malips" ] || [ "$PARSE" == "mandiant" ]; then
-	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
+	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' | tr -d '\r' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 
 if [ $PIPE -eq 1 ]; then
