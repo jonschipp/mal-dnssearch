@@ -58,13 +58,13 @@ format() {
 
 	echo -e "\n[*] Waiting for input.. (Did you pipe stdin or specify a file?)\n" 1>&2
 
-awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN  'BEGIN \
+awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN wlist=$WLIST 'BEGIN \
         {
-	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in"
+	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in\tmeta.whitelist"
 	}
 	{
-		$2=type; $3=source; $4=url; $5=notice; $6=if_in;
-		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6;
+		$2=type; $3=source; $4=url; $5=notice; $6=if_in; $7=wlist;
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7;
 	}'
 
 }
@@ -85,6 +85,7 @@ SOURCE="mal-dnssearch"
 NOTICE="F"
 URL="-"
 IF_IN="-"
+WLIST="-"
 ARGC=$#
 FILE_SET=0
 TYPE_SET=0
