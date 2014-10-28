@@ -11,8 +11,8 @@ install:
 	chmod 755 $(DEST)
 	install mal-dnssearch.sh $(DEST)
 	install tools/mal-dns2bro.sh $(DEST)
-	ln -s $(DEST)/mal-dnssearch.sh $(BIN)/mal-dnssearch
-	ln -s $(DEST)/mal-dns2bro.sh $(BIN)/mal-dns2bro
+	ln -f -s $(DEST)/mal-dnssearch.sh $(BIN)/mal-dnssearch
+	ln -f -s $(DEST)/mal-dns2bro.sh $(BIN)/mal-dns2bro
 
 uninstall:
 	$(info Uninstalling mal-dnssearch!)
