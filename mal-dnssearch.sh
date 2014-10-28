@@ -209,7 +209,7 @@ let tally++
 			if [ "$bad_host" == "$host" ]; then
 				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
 				let found++
-			if [ "$FWTRUE" == 1 ]; then
+			if [ "$FWTRUE" -eq 1 ]; then
 				ipblock
 			fi
 		break
