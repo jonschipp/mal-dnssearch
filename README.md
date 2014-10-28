@@ -118,14 +118,14 @@ Usage: ./mal-dnssearch -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out
 
 ```shell
 ./mal-dnssearch.sh -M mandiant (Downloads file only)
-./mal-dnsearch.sh -T tshark -f dns.pcap
+./mal-dnssearch.sh -T tshark -f dns.pcap
 ./mal-dnssearch.sh -T passivedns -f /var/log/passivedns/dmz.log -w whitelist.txt
-./mal-dnsearch.sh -T bro -f /usr/local/bro/logs/current/dns.log \
+./mal-dnssearch.sh -T bro -f /usr/local/bro/logs/current/dns.log \
 	-w "company.com|abc.com|google|facebook" -l dns.results.log
-./mal-dnsearch.sh -T bro -f /usr/local/bro/logs/current/dns.log -F iptables -l dns.results.log
-./mal-dnsearch.sh -T argus -f dns.argus -M malhosts -F iptables -l dns.results.log
-./mal-dnsearch.sh -T custom-ip -f iplist.log -M snort -l ip.results.log -N -v
-./mal-dnsearch.sh -T custom-ip -f iplist.log -M mandiant -l ip.results.log
+./mal-dnssearch.sh -T bro -f /usr/local/bro/logs/current/dns.log -F iptables -l dns.results.log
+./mal-dnssearch.sh -T argus -f dns.argus -M malhosts -F iptables -l dns.results.log
+./mal-dnssearch.sh -T custom-ip -f iplist.log -M snort -l ip.results.log -N -v
+./mal-dnssearch.sh -T custom-ip -f iplist.log -M mandiant -l ip.results.log
 ```
 
 ## Author:
