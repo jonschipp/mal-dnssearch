@@ -65,16 +65,9 @@ mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_ap
 
 #### Todo (not ranked):
 
-   * ~~Add iptables, PF, and IPFW support to block matches~~
-   * ~~Allow multiple log files and types to be specified at once~~
-   * ~~Add/fix counters~~
    * More efficient parsing
-   * ~~Added two verbosity options~~
    * Add support for more logs (e-mail me with request and log sample)
-   * ~~Read in alternative lists e.g. Emerging Threats, CIArmy~~
    * Check for necessary programs where needed e.g. bro-cut, ra, tcpdump, tshark
-   * ~~Ability to read in file with IPs instead of names~~
-   * ~~Add skip download option~~
    * Option to edit/change URLs in the script
    * Add cron mode option
    * Rewrite script in Python or C
@@ -90,9 +83,6 @@ mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_ap
     	* http://www.mirc.com/servers.ini
     	* https://reputation.alienvault.com/reputation.data
    * Read from exported Sguil event logs
-   * ~~Rewrite log options to use -L <log type>~~
-   * ~~Rewrite malware host lists options to -M <list>~~
-   * ~~Replace awk with wc -l for line counting because it's much faster~~
    * Add apache logs
    * Fix "0 out of 0 entries matched" on second run bug
    * Add whitelist option to mal-dns2bro
