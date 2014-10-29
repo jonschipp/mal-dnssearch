@@ -92,7 +92,7 @@ mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_ap
    * Read from exported Sguil event logs
    * ~~Rewrite log options to use -L <log type>~~
    * ~~Rewrite malware host lists options to -M <list>~~
-   * Replace awk with wc -l for line counting because it's much faster
+   * ~~Replace awk with wc -l for line counting because it's much faster~~
    * Add apache logs
    * Fix "0 out of 0 entries matched" on second run bug
    * Add whitelist option to mal-dns2bro
