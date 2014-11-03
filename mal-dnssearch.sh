@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # BSD License:
 # Copyright (c) 2013, Jon Schipp
 # All rights reserved.
