@@ -58,7 +58,7 @@ format() {
 
 	echo -e "\n[*] Waiting for input.. (Did you pipe stdin or specify a file?)\n" 1>&2
 
-awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN wlist=$WLIST 'BEGIN \
+awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN -v wlist=$WLIST 'BEGIN \
         {
 	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in\tmeta.whitelist"
 	}
