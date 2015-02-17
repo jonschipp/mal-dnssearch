@@ -134,25 +134,25 @@ fi
 
 parse()
 {
-if [ "$PARSE" == "alienvault" ] || [ "$PARSE" == "mayhemic" ]; then
+if [[ "$PARSE" = "alienvault" ]] || [[ "$PARSE" = "mayhemic" ]]; then
 	{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
-if [ "$PARSE" == "botcc" ] || [ "$PARSE" == "tor" ] || [ "$PARSE" == "rbn" ]; then
+if [[ "$PARSE" = "botcc" ]] || [[ "$PARSE" = "tor" ]] || [[ "$PARSE" = "rbn" ]]; then
 	if [ "$DOWNLOAD" != "NO" ]; then
 		{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' | awk 'BEGIN { RS="," } { print }' \
 		| sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
 	fi
 fi
-if [ "$PARSE" == "malhosts" ]; then
+if [[ "$PARSE" = "malhosts" ]]; then
 	if [ "$DOWNLOAD" != "NO" ]; then
 		{ rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
 	fi
 fi
-if [ "$PARSE" == "malips" ] || [ "$PARSE" == "mandiant" ]; then
+if [[ "$PARSE" = "malips" ]] || [[ "$PARSE" = "mandiant" ]]; then
 	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' | tr -d '\r' > $MALHOSTFILE; } < $MALHOSTFILE
 fi
 
-if [ $PIPE -eq 1 ]; then
+if [[ $PIPE = 1 ]]; then
 	echo -e "\n\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Stdout below for piping to a file or program\n" 1>&2
 	cat $MALHOSTFILE
 	exit 0
@@ -160,28 +160,22 @@ fi
 }
 
 unique() {
-if [ $DNS -eq 0 ]; then
-	sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 -S 1G| uniq
-
-fi
-
-if [ $DNS -eq 1 ]; then
-	sort -S 1G | uniq
-fi
+  [[ $DNS = 0 ]] && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 -S 1G| uniq
+  [[ $DNS = 1 ]] && sort -S 1G | uniq
 }
 
 ipblock()
 {
-if [ "$FW" == "iptables" ]; then
+if [[ "$FW" = "iptables" ]]; then
 	iptables -A INPUT -s "$bad_host" -j DROP
 	iptables -A OUTPUT -s "$bad_host" -j DROP
 	iptables -A FORWARD -s "$bad_host" -j DROP
 fi
-if [ "$FW" == "pf" ]; then
+if [[ "$FW" = "pf" ]]; then
 	echo -e "block in from "$bad_host" to any\n \
 	block out from "$bad_host" to any" | pfctl -a mal-dnssearch -f -
 fi
-if [ "$FW" == "ipfw" ]; then
+if [[ "$FW" = "ipfw" ]]; then
 	ipfw add drop ip from "$bad_host" to any
 	ipfw add drop ip from any to "$bad_host"
 fi
@@ -197,22 +191,15 @@ while read bad_host
 do
 let tally++
 
-	if [ ${VERBOSELIST:-0} -eq 1 ]; then
-		echo "-list: $bad_host"
-	fi
-
+	[[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $badhost"
 		for host in $(eval "$1")
 		do
-			if [ ${VERBOSELOG:-0} -eq 1 ]; then
-				echo "---log: $host"
-			fi
-			if [ "$bad_host" == "$host" ]; then
+			[[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
+			if [[ "$bad_host" == "$host" ]]; then
 				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
 				let found++
-			if [ "$FWTRUE" -eq 1 ]; then
-				ipblock
-			fi
-		break
+			        [[ "$FWTRUE" = "1" ]] && ipblock
+		                break
 			fi
 
 		done
@@ -222,7 +209,7 @@ echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of
 }
 
 # if less than 1 argument
-if [ ! $# -gt 1 ]; then
+if [[ ! $# > 1 ]]; then
 	usage
 	exit 1
 fi
@@ -382,11 +369,11 @@ do
 done
 
 # Check for option dependency
-if [ $LOG_SET -eq 1 ] && [ $FILE_SET -eq 0 ]; then
+if [[ $LOG_SET = 1 ]] && [[ $FILE_SET = 0 ]]; then
 	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
 	exit 1
 
-elif [ $FILE_SET -eq 1 ] && [ $LOG_SET -eq 0 ]; then
+elif [[ $FILE_SET = 1 ]] && [[ $LOG_SET = 0 ]]; then
 	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
 	exit 1
 fi
@@ -401,65 +388,65 @@ download
 parse
 
 # logging
-if [ $LOG -eq 1 ]; then
+if [[ $LOG = 1 ]]; then
 	exec > >(tee "$LOGFILE") 2>&1
 	echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
 # DNS parsing for log files
-if [ $BRODNS -eq 1 ]; then
+if [[ $BRODNS = 1 ]]; then
 	PROG=BRO-DNS; COUNT=$(wc -l < $FILE)
 	compare "bro-cut query < \$FILE | $(eval wlistchk) | unique"
 fi
-if [ $BROCONN -eq 1 ]; then
+if [[ $BROCONN = 1 ]]; then
 	PROG=BRO-CONN; COUNT=$(wc -l < $FILE)
 	compare "bro-cut id.orig_h id.resp_h < \$FILE | tr '\t' '\n' | $(eval wlistchk) | unique"
 fi
-if [ $PDNS -eq 1 ]; then
+if [[ $PDNS = 1 ]]; then
 	PROG=PassiveDNS; COUNT=$(wc -l < $FILE)
 	compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | unique"
 fi
-if [ $HTTPRY -eq 1 ]; then
+if [[ $HTTPRY = 1 ]]; then
 	PROG=HttPry; COUNT=$(wc -l < $FILE)
 	compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | unique"
 fi
-if [ $TSHARK -eq 1 ]; then
+if [[ $TSHARK = 1 ]]; then
 	PROG=TShark; COUNT=$(wc -l < $FILE)
 	compare "tshark -nr \$FILE -R udp.port-eq53 -e dns.qry.name -T fields 2>/dev/null \
 	| $(eval wlistchk) | sed -e '/#/d' | unique"
 fi
-if [ $TCPDUMP -eq 1 ]; then
+if [[ $TCPDUMP = 1 ]]; then
 	PROG=TCPDump; COUNT=$(wc -l < $FILE)
 	compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
 	 | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| unique"
 fi
-if [ $ARGUS -eq 1 ]; then
+if [[ $ARGUS = 1 ]]; then
 	PROG=ARGUS; COUNT=$(wc -l < $FILE)
 	compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
 	sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | unique"
 fi
-if [ $BIND -eq 1 ]; then
+if [[ $BIND = 1 ]]; then
 	PROG=BIND; COUNT=$(wc -l < $FILE)
 	compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \
 	| grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | unique"
 fi
-if [ $SWALL -eq 1 ]; then
+if [[ $SWALL = 1 ]]; then
 	PROG=SonicWALL; COUNT=$(wc -l < $FILE)
 	compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
 	| sed -e 's/dstname=//' -e 's/ a.*//' | unique"
 fi
-if [ $HOSTS -eq 1 ]; then
+if [[ $HOSTS = 1 ]]; then
 	PROG="Hosts File"; COUNT=$(wc -l < $FILE)
 	compare "sed -e '/^$/d' -e '/^#/d' < \$FILE | $(eval wlistchk) | cut -f3 \
 	| awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | unique"
 fi
-if [ $CUSTOMDNS -eq 1 ]; then
+if [[ $CUSTOMDNS = 1 ]]; then
 	PROG="Custom DNS File"; COUNT=$(wc -l < $FILE)
 	compare "cat \$FILE | $(eval wlistchk) | unique"
 fi
 
 # IP parsing for log files
-if [ $CUSTOMIP -eq 1 ]; then
+if [[ $CUSTOMIP = 1 ]]; then
 	{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
 	parse
 	PROG="Custom IP File"; COUNT=$(wc -l < $FILE)
