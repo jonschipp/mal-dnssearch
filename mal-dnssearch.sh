@@ -82,6 +82,10 @@ e.g. $0 -T passivedns -f /var/log/pdns.log -w "facebook|google" -F iptables -l o
 EOF
 }
 
+bash_check(){
+  echo "$BASH_VERSION" | grep -q '[4-5]\.[2-9]' || { echo "${RED}Bash 4.2+ required!${END}" && exit 1; }
+}
+
 download()
 {
 if [ "$DOWNLOAD" != "NO" ]; then
@@ -185,26 +189,24 @@ compare()
 {
 found=0
 tally=0
+declare -a bad_hosts
 
 echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
 while read bad_host
 do
-let tally++
-
-	[[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $badhost"
-		for host in $(eval "$1")
-		do
-			[[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
-			if [[ "$bad_host" == "$host" ]]; then
-				echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
-				let found++
-			        [[ "$FWTRUE" = "1" ]] && ipblock
-		                break
-			fi
-
-		done
-
+  let tally++
+  bad_hosts[$bad_host]=1
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
+
+for host in $(eval "$1")
+do
+  [[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
+  if [[ ${bad_hosts[$host]} ]]; then
+    echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
+    let found++
+    [[ "$FWTRUE" = "1" ]] && ipblock
+  fi
+done
 echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}${MALHOSTFILE:-$MALFILEDEFAULT}${END}"
 }
 
@@ -244,6 +246,8 @@ ORANGE=$(tput setaf 172)
 MAGENTA="$(tput setaf 5)"
 CYAN="$(tput setaf 6)"
 WHITE="$(tput setaf 7)"
+
+bash_check
 
 # option and argument handling
 while getopts "hf:F:l:pM:NT:vVw:" OPTION

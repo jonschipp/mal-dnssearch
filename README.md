@@ -4,7 +4,7 @@
 addresses in logs against malware (and related) reputation data. <br>
 It reports any matches and supports many log formats. <br>
 
-Tested with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu.
+Requires Bash version 4.2+. Tested with Bash on OpenBSD, FreeBSD, OSX, and Ubuntu.
 
 ![mal-dnssearch Screenshot](http://jonschipp.com/pics/mal-dnssearch.png)
 
