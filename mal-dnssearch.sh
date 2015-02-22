@@ -88,79 +88,79 @@ bash_check(){
 
 download()
 {
-if [ "$DOWNLOAD" != "NO" ]; then
-	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
-	if command -v curl >/dev/null 2>&1; then
-		curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+  if [ "$DOWNLOAD" != "NO" ]; then
+  echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
+  if command -v curl >/dev/null 2>&1; then
+    curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
-		if [ "$?" -gt 0 ]; then
-			echo -e "\nDownload Failed! - Check URL"
-			exit 1
-		fi
+    if [ "$?" -gt 0 ]; then
+      echo -e "\nDownload Failed! - Check URL"
+      exit 1
+    fi
 
-	elif command -v wget >/dev/null 2>&1; then
-		wget --no-check-certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+  elif command -v wget >/dev/null 2>&1; then
+    wget --no-check-certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
-		if [ "$?" -gt 0 ]; then
-			echo -e "\nDownload Failed! - Check URL"
-			exit 1
-		fi
+    if [ "$?" -gt 0 ]; then
+      echo -e "\nDownload Failed! - Check URL"
+      exit 1
+    fi
 
-	else
-		echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
-		exit 1
-	fi
-fi
+  else
+    echo -e "\nERROR: Neither cURL or Wget are installed or are not in the \$PATH!\n"
+    exit 1
+  fi
+  fi
 
-if [ -f ${MALHOSTFILE:-$MALFILEDEFAULT} ]; then
-	total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | wc -l)
-else
-	echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} File doesn't exist (Is it in the current working directory?)..Exiting."
-	exit 1
-fi
+  if [ -f ${MALHOSTFILE:-$MALFILEDEFAULT} ]; then
+    total=$(sed -e '/^$/d' -e '/^#/d' < ${MALHOSTFILE:-$MALFILEDEFAULT} | wc -l)
+  else
+    echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} File doesn't exist (Is it in the current working directory?)..Exiting."
+    exit 1
+  fi
 }
 
 stats()
 {
-echo -e " ${RED}-->${END} ${ORANGE}[${END}${RED}-${END}${ORANGE}]${END} stats: found: ${RED}${found}${END}, current mal item: ${RED}$tally${END} of ${RED}$total${END}"
+  echo -e " ${RED}-->${END} ${ORANGE}[${END}${RED}-${END}${ORANGE}]${END} stats: found: ${RED}${found}${END}, current mal item: ${RED}$tally${END} of ${RED}$total${END}"
 }
 
 wlistchk()
 {
-if [ -z $WLISTDOM ]; then
-	echo "grep -v -i -E '(in-addr|\_)'"
-elif [ -f $WLISTDOM ]; then
-	echo "grep -v -i -f $WLISTDOM"
-else
-	echo "grep -v -i -E '(in-addr|$WLISTDOM)'"
-fi
+  if [ -z $WLISTDOM ]; then
+    echo "grep -v -i -E '(in-addr|\_)'"
+  elif [ -f $WLISTDOM ]; then
+    echo "grep -v -i -f $WLISTDOM"
+  else
+    echo "grep -v -i -E '(in-addr|$WLISTDOM)'"
+  fi
 }
 
 parse()
 {
-if [[ "$PARSE" = "alienvault" ]] || [[ "$PARSE" = "mayhemic" ]]; then
-	{ rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
-fi
-if [[ "$PARSE" = "botcc" ]] || [[ "$PARSE" = "tor" ]] || [[ "$PARSE" = "rbn" ]]; then
-	if [ "$DOWNLOAD" != "NO" ]; then
-		{ rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' | awk 'BEGIN { RS="," } { print }' \
-		| sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
-	fi
-fi
-if [[ "$PARSE" = "malhosts" ]]; then
-	if [ "$DOWNLOAD" != "NO" ]; then
-		{ rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
-	fi
-fi
-if [[ "$PARSE" = "malips" ]] || [[ "$PARSE" = "mandiant" ]]; then
-	{ rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' | tr -d '\r' > $MALHOSTFILE; } < $MALHOSTFILE
-fi
+  if [[ "$PARSE" = "alienvault" ]] || [[ "$PARSE" = "mayhemic" ]]; then
+    { rm $MALHOSTFILE && awk '{ print $1 }' | sed -e '/^$/d' -e '/^#/d' > $MALHOSTFILE; } < $MALHOSTFILE
+  fi
+  if [[ "$PARSE" = "botcc" ]] || [[ "$PARSE" = "tor" ]] || [[ "$PARSE" = "rbn" ]]; then
+    if [ "$DOWNLOAD" != "NO" ]; then
+      { rm $MALHOSTFILE && grep -o '\[.*\]' | sed -e 's/\[//;s/\]//' | awk 'BEGIN { RS="," } { print }' \
+      | sed '/^$/d' > $MALHOSTFILE; } < $MALHOSTFILE
+    fi
+  fi
+  if [[ "$PARSE" = "malhosts" ]]; then
+    if [ "$DOWNLOAD" != "NO" ]; then
+      { rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
+    fi
+  fi
+  if [[ "$PARSE" = "malips" ]] || [[ "$PARSE" = "mandiant" ]]; then
+    { rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' | tr -d '\r' > $MALHOSTFILE; } < $MALHOSTFILE
+  fi
 
-if [[ $PIPE = 1 ]]; then
-	echo -e "\n\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Stdout below for piping to a file or program\n" 1>&2
-	cat $MALHOSTFILE
-	exit 0
-fi
+  if [[ $PIPE = 1 ]]; then
+    echo -e "\n\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} Stdout below for piping to a file or program\n" 1>&2
+    cat $MALHOSTFILE
+    exit 0
+  fi
 }
 
 unique() {
@@ -170,50 +170,50 @@ unique() {
 
 ipblock()
 {
-if [[ "$FW" = "iptables" ]]; then
-	iptables -A INPUT -s "$bad_host" -j DROP
-	iptables -A OUTPUT -s "$bad_host" -j DROP
-	iptables -A FORWARD -s "$bad_host" -j DROP
-fi
-if [[ "$FW" = "pf" ]]; then
-	echo -e "block in from "$bad_host" to any\n \
-	block out from "$bad_host" to any" | pfctl -a mal-dnssearch -f -
-fi
-if [[ "$FW" = "ipfw" ]]; then
-	ipfw add drop ip from "$bad_host" to any
-	ipfw add drop ip from any to "$bad_host"
-fi
+  if [[ "$FW" = "iptables" ]]; then
+    iptables -A INPUT -s "$bad_host" -j DROP
+    iptables -A OUTPUT -s "$bad_host" -j DROP
+    iptables -A FORWARD -s "$bad_host" -j DROP
+  fi
+  if [[ "$FW" = "pf" ]]; then
+    echo -e "block in from "$bad_host" to any\n \
+    block out from "$bad_host" to any" | pfctl -a mal-dnssearch -f -
+  fi
+  if [[ "$FW" = "ipfw" ]]; then
+    ipfw add drop ip from "$bad_host" to any
+    ipfw add drop ip from any to "$bad_host"
+  fi
 }
 
 compare()
 {
-found=0
-tally=0
-declare -a bad_hosts
+  found=0
+  tally=0
+  declare -a bad_hosts
 
-echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
-while read bad_host
-do
-  let tally++
-  bad_hosts[$bad_host]=1
-done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
+  echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
+  while read bad_host
+  do
+    let tally++
+    bad_hosts[$bad_host]=1
+  done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
 
-for host in $(eval "$1")
-do
-  [[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
-  if [[ ${bad_hosts[$host]} ]]; then
-    echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
-    let found++
-    [[ "$FWTRUE" = "1" ]] && ipblock
-  fi
-done
-echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}${MALHOSTFILE:-$MALFILEDEFAULT}${END}"
+  for host in $(eval "$1")
+  do
+    [[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
+    if [[ ${bad_hosts[$host]} ]]; then
+      echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
+      let found++
+      [[ "$FWTRUE" = "1" ]] && ipblock
+    fi
+  done
+  echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}${MALHOSTFILE:-$MALFILEDEFAULT}${END}"
 }
 
 # if less than 1 argument
 if [[ ! $# > 1 ]]; then
-	usage
-	exit 1
+  usage
+  exit 1
 fi
 
 # Initializations
@@ -252,134 +252,133 @@ bash_check
 # option and argument handling
 while getopts "hf:F:l:pM:NT:vVw:" OPTION
 do
-     case $OPTION in
-	 F)
-	     FWTRUE=1
-	     FW="$OPTARG"
-	     ;;
-         f)
-	     FILE="$OPTARG"
-	     FILE_SET=1
-	     ;;
-         h)
-             usage
-             exit 1
-             ;;
-         l)
-             LOG=1
-             LOGFILE="$OPTARG"
-             ;;
-         M)
-	     if [[ "$OPTARG" == snort ]]; then
-	     		MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
-	        	MALHOSTFILE="ip-filter.blf"
-	     elif [[ "$OPTARG" == et_ips ]]; then
-			MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt"
-       		  	MALHOSTFILE="compromised-ips.txt"
-	     elif [[ "$OPTARG" == alienvault ]]; then
-			MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
-       		  	MALHOSTFILE="reputation.generic"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == botcc ]]; then
-		        MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
-		  	MALHOSTFILE="botcc.rules"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == tor ]]; then
-			MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"
-		        MALHOSTFILE="tor.rules"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == rbn ]]; then
-			MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
-		       	MALHOSTFILE="emerging-rbn.rules"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == malhosts ]]; then
-			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
-		        MALHOSTFILE="hosts.txt"
-			PARSE="$OPTARG"
-			DNS=1
-	     elif [[ "$OPTARG" == malips ]]; then
-			MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
-       		  	MALHOSTFILE="ip.txt"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == ciarmy ]]; then
-			MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
-    		        MALHOSTFILE="ci-badguys.txt"
-			PARSE="$OPTARG"
-	     elif [[ "$OPTARG" == mandiant ]]; then
-			MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
-		        MALHOSTFILE="mandiant_apt1.dns"
-			PARSE="$OPTARG"
-			DNS=1
-	     elif [[ "$OPTARG" == mayhemic ]]; then
-			MALHOSTURL="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
-			MALHOSTFILE="malhosts.txt"
-			PARSE="$OPTARG"
-			DNS=1
-	     else
-		      echo "Unknown reputation list!"
-		      exit 1
-	     fi
-	     ;;
-	 N)
-             DOWNLOAD="NO"
-             ;;
-	 p)
-	     PIPE=1
-	     ;;
-	 T)
-	    	if [[ "$OPTARG" == argus ]]; then
-			 ARGUS=1
-	     	elif [[ "$OPTARG" == bind ]]; then
-		      	 BIND=1
-	     	elif [[ "$OPTARG" ==  bro-dns ]]; then
-		     	 BRODNS=1
-		elif [[ "$OPTARG" == bro-conn ]]; then
-			 BROCONN=1
-	     	elif [[ "$OPTARG" == custom-ip ]]; then
-			 CUSTOMIP=1
-	     	elif [[ "$OPTARG" == custom-dns ]]; then
-			 CUSTOMDNS=1
-	     	elif [[ "$OPTARG" == hosts ]]; then
-		     	 HOSTS=1
-	     	elif [[ "$OPTARG" == httpry ]]; then
-		     	 HTTPRY=1
-	     	elif [[ "$OPTARG" == passivedns ]]; then
-		     	 PDNS=1
-	     	elif [[ "$OPTARG" == sonicwall ]]; then
-		     	 SWALL=1
-	     	elif [[ "$OPTARG" == tcpdump ]]; then
-		     	 TCPDUMP=1
-	     	elif [[ "$OPTARG" == tshark ]]; then
-		     	 TSHARK=1
-	     	else
-		         echo "Unknown type!"
-		         exit 1
-	        fi
-		LOG_SET=1
-	        ;;
-         w)
-             WLISTDOM="$OPTARG"
-             ;;
-	 v)
-             VERBOSELIST=1
-	     ;;
-	 V)
-             VERBOSELOG=1
-	     ;;
-         \?)
-             exit 1
-             ;;
-     esac
+case $OPTION in
+  F)
+    FWTRUE=1
+    FW="$OPTARG"
+    ;;
+  f)
+    FILE="$OPTARG"
+    FILE_SET=1
+    ;;
+  h)
+    usage
+    exit 1
+    ;;
+  l)
+    LOG=1
+    LOGFILE="$OPTARG"
+    ;;
+  M)
+   if [[ "$OPTARG" == snort ]]; then
+     MALHOSTURL="http://labs.snort.org/feeds/ip-filter.blf"
+     MALHOSTFILE="ip-filter.blf"
+   elif [[ "$OPTARG" == et_ips ]]; then
+     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/compromised-ips.txt"
+     MALHOSTFILE="compromised-ips.txt"
+   elif [[ "$OPTARG" == alienvault ]]; then
+     MALHOSTURL="http://reputation.alienvault.com/reputation.generic"
+     MALHOSTFILE="reputation.generic"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == botcc ]]; then
+     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/botcc.rules"
+     MALHOSTFILE="botcc.rules"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == tor ]]; then
+     MALHOSTURL="http://rules.emergingthreats.net/open/suricata/rules/tor.rules"
+     MALHOSTFILE="tor.rules"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == rbn ]]; then
+     MALHOSTURL="http://rules.emergingthreats.net/blockrules/emerging-rbn.rules"
+     MALHOSTFILE="emerging-rbn.rules"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == malhosts ]]; then
+     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/hosts.txt"
+     MALHOSTFILE="hosts.txt"
+     PARSE="$OPTARG"
+     DNS=1
+   elif [[ "$OPTARG" == malips ]]; then
+     MALHOSTURL="http://www.malwaredomainlist.com/hostslist/ip.txt"
+     MALHOSTFILE="ip.txt"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == ciarmy ]]; then
+     MALHOSTURL="http://www.ciarmy.com/list/ci-badguys.txt"
+     MALHOSTFILE="ci-badguys.txt"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == mandiant ]]; then
+     MALHOSTURL="https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns"
+     MALHOSTFILE="mandiant_apt1.dns"
+     PARSE="$OPTARG"
+     DNS=1
+   elif [[ "$OPTARG" == mayhemic ]]; then
+     MALHOSTURL="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
+     MALHOSTFILE="malhosts.txt"
+     PARSE="$OPTARG"
+     DNS=1
+   else
+     echo "Unknown reputation list!"
+     exit 1
+   fi
+   ;;
+  N)
+   DOWNLOAD="NO"
+   ;;
+  p)
+   PIPE=1
+   ;;
+  T)
+   if [[ "$OPTARG" == argus ]]; then
+     ARGUS=1
+   elif [[ "$OPTARG" == bind ]]; then
+     BIND=1
+   elif [[ "$OPTARG" ==  bro-dns ]]; then
+     BRODNS=1
+   elif [[ "$OPTARG" == bro-conn ]]; then
+     BROCONN=1
+   elif [[ "$OPTARG" == custom-ip ]]; then
+     CUSTOMIP=1
+   elif [[ "$OPTARG" == custom-dns ]]; then
+     CUSTOMDNS=1
+   elif [[ "$OPTARG" == hosts ]]; then
+      HOSTS=1
+   elif [[ "$OPTARG" == httpry ]]; then
+      HTTPRY=1
+   elif [[ "$OPTARG" == passivedns ]]; then
+      PDNS=1
+   elif [[ "$OPTARG" == sonicwall ]]; then
+      SWALL=1
+   elif [[ "$OPTARG" == tcpdump ]]; then
+      TCPDUMP=1
+   elif [[ "$OPTARG" == tshark ]]; then
+      TSHARK=1
+   else
+      echo "Unknown type!"
+      exit 1
+    fi
+   LOG_SET=1
+    ;;
+  w)
+   WLISTDOM="$OPTARG"
+   ;;
+  v)
+   VERBOSELIST=1
+   ;;
+  V)
+   VERBOSELOG=1
+   ;;
+  \?)
+   exit 1
+   ;;
+  esac
 done
 
 # Check for option dependency
 if [[ $LOG_SET = 1 ]] && [[ $FILE_SET = 0 ]]; then
-	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
-	exit 1
-
+  echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
+  exit 1
 elif [[ $FILE_SET = 1 ]] && [[ $LOG_SET = 0 ]]; then
-	echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
-	exit 1
+  echo "Missing option: \`\`-T'' requires \`\`-f'' and vice versa"
+  exit 1
 fi
 
 echo -e "\n${BLUE}PID${END}: ${ORANGE}$$${END}" 1>&2
@@ -393,66 +392,66 @@ parse
 
 # logging
 if [[ $LOG = 1 ]]; then
-	exec > >(tee "$LOGFILE") 2>&1
-	echo -e "\n --> Logging stdout & stderr to $LOGFILE"
+  exec > >(tee "$LOGFILE") 2>&1
+  echo -e "\n --> Logging stdout & stderr to $LOGFILE"
 fi
 
 # DNS parsing for log files
 if [[ $BRODNS = 1 ]]; then
-	PROG=BRO-DNS; COUNT=$(wc -l < $FILE)
-	compare "bro-cut query < \$FILE | $(eval wlistchk) | unique"
+  PROG=BRO-DNS; COUNT=$(wc -l < $FILE)
+  compare "bro-cut query < \$FILE | $(eval wlistchk) | unique"
 fi
 if [[ $BROCONN = 1 ]]; then
-	PROG=BRO-CONN; COUNT=$(wc -l < $FILE)
-	compare "bro-cut id.orig_h id.resp_h < \$FILE | tr '\t' '\n' | $(eval wlistchk) | unique"
+  PROG=BRO-CONN; COUNT=$(wc -l < $FILE)
+  compare "bro-cut id.orig_h id.resp_h < \$FILE | tr '\t' '\n' | $(eval wlistchk) | unique"
 fi
 if [[ $PDNS = 1 ]]; then
-	PROG=PassiveDNS; COUNT=$(wc -l < $FILE)
-	compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | unique"
+  PROG=PassiveDNS; COUNT=$(wc -l < $FILE)
+  compare "sed 's/||/:/g' < \$FILE | $(eval wlistchk) | cut -d \: -f5 | sed 's/\.$//' | unique"
 fi
 if [[ $HTTPRY = 1 ]]; then
-	PROG=HttPry; COUNT=$(wc -l < $FILE)
-	compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | unique"
+  PROG=HttPry; COUNT=$(wc -l < $FILE)
+  compare "awk '{ print $7 }' < \$FILE | $(eval wlistchk) | sed -e '/^-$/d' -e '/^$/d' | unique"
 fi
 if [[ $TSHARK = 1 ]]; then
-	PROG=TShark; COUNT=$(wc -l < $FILE)
-	compare "tshark -nr \$FILE -R udp.port-eq53 -e dns.qry.name -T fields 2>/dev/null \
-	| $(eval wlistchk) | sed -e '/#/d' | unique"
+  PROG=TShark; COUNT=$(wc -l < $FILE)
+  compare "tshark -nr \$FILE -R udp.port-eq53 -e dns.qry.name -T fields 2>/dev/null \
+  | $(eval wlistchk) | sed -e '/#/d' | unique"
 fi
 if [[ $TCPDUMP = 1 ]]; then
-	PROG=TCPDump; COUNT=$(wc -l < $FILE)
-	compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
-	 | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| unique"
+  PROG=TCPDump; COUNT=$(wc -l < $FILE)
+  compare "tcpdump -nnr \$FILE udp port 53 2>/dev/null | grep -o 'A? .*\.' | $(eval wlistchk) \
+   | sed -e 's/A? //' -e '/[#,\)\(]/d' -e '/^[a-zA-Z0-9].\{1,4\}$/d' -e 's/\.$//'| unique"
 fi
 if [[ $ARGUS = 1 ]]; then
-	PROG=ARGUS; COUNT=$(wc -l < $FILE)
-	compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
-	sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | unique"
+  PROG=ARGUS; COUNT=$(wc -l < $FILE)
+  compare "ra -nnr \$FILE -s suser:512 - udp port 53 | $(eval wlistchk) | \
+  sed -e 's/s\[..\]\=.\{1,13\}//' -e 's/\.\{1,20\}$//' -e 's/^[0-9\.]*$//' -e '/^$/d' | unique"
 fi
 if [[ $BIND = 1 ]]; then
-	PROG=BIND; COUNT=$(wc -l < $FILE)
-	compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \
-	| grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | unique"
+  PROG=BIND; COUNT=$(wc -l < $FILE)
+  compare "awk '/query/ { print \$15 } /resolving/ { print \$13 }' \$FILE | $(eval wlistchk) \
+  | grep -v resolving | sed -e 's/'\"'\"'//g' -e 's/\/.*\/.*://' -e '/[\(\)]/d' | unique"
 fi
 if [[ $SWALL = 1 ]]; then
-	PROG=SonicWALL; COUNT=$(wc -l < $FILE)
-	compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
-	| sed -e 's/dstname=//' -e 's/ a.*//' | unique"
+  PROG=SonicWALL; COUNT=$(wc -l < $FILE)
+  compare "grep -h -o 'dstname=.* a' \$FILE 2>/dev/null | $(eval wlistchk) \
+  | sed -e 's/dstname=//' -e 's/ a.*//' | unique"
 fi
 if [[ $HOSTS = 1 ]]; then
-	PROG="Hosts File"; COUNT=$(wc -l < $FILE)
-	compare "sed -e '/^$/d' -e '/^#/d' < \$FILE | $(eval wlistchk) | cut -f3 \
-	| awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | unique"
+  PROG="Hosts File"; COUNT=$(wc -l < $FILE)
+  compare "sed -e '/^$/d' -e '/^#/d' < \$FILE | $(eval wlistchk) | cut -f3 \
+  | awk 'BEGIN { RS=\" \"; OFS = \"\n\"; ORS = \"\n\" } { print }' | sed '/^$/d' | unique"
 fi
 if [[ $CUSTOMDNS = 1 ]]; then
-	PROG="Custom DNS File"; COUNT=$(wc -l < $FILE)
-	compare "cat \$FILE | $(eval wlistchk) | unique"
+  PROG="Custom DNS File"; COUNT=$(wc -l < $FILE)
+  compare "cat \$FILE | $(eval wlistchk) | unique"
 fi
 
 # IP parsing for log files
 if [[ $CUSTOMIP = 1 ]]; then
-	{ rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
-	parse
-	PROG="Custom IP File"; COUNT=$(wc -l < $FILE)
-	compare "cat $FILE | $(eval wlistchk) | unique"
+  { rm $MALHOSTFILE && sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 | uniq > $MALHOSTFILE; } < $MALHOSTFILE
+  parse
+  PROG="Custom IP File"; COUNT=$(wc -l < $FILE)
+  compare "cat $FILE | $(eval wlistchk) | unique"
 fi
