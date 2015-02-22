@@ -6,6 +6,8 @@ It reports any matches and supports many log formats. <br>
 
 Tested with Bash on OpenBSD, FreeBSD, Mac OSX, and Ubuntu.
 
+![mal-dnssearch Screenshot](http://jonschipp.com/pics/mal-dnssearch.png)
+
 ## Installation:
 
 Edit the Makefile or use the defaults to install the script. <br>
