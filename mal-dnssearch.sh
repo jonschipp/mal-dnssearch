@@ -205,7 +205,7 @@ let tally++
 		done
 
 done < <(cut -f1 < ${MALHOSTFILE:-$MALFILEDEFAULT} | sed -e '/^#/d' -e '/^$/d')
-echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}$MALHOSTFILE${END}"
+echo -e "--\n${ORANGE}[${END}${RED}=${END}${ORANGE}]${END} ${RED}$found${END} of ${ORANGE}$total${END} entries matched from ${BLUE}${MALHOSTFILE:-$MALFILEDEFAULT}${END}"
 }
 
 # if less than 1 argument
