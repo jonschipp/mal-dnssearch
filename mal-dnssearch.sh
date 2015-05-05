@@ -189,7 +189,7 @@ compare()
 {
   found=0
   tally=0
-  declare -a bad_hosts
+  declare -A bad_hosts
 
   echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
   while read bad_host
