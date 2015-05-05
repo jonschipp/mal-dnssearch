@@ -91,7 +91,7 @@ download()
   if [ "$DOWNLOAD" != "NO" ]; then
   echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
   if command -v curl >/dev/null 2>&1; then
-    curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+    curl --insecure -L -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
     if [ "$?" -gt 0 ]; then
       echo -e "\nDownload Failed! - Check URL"
