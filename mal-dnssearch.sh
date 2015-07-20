@@ -91,7 +91,7 @@ download()
   if [ "$DOWNLOAD" != "NO" ]; then
   echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
   if command -v curl >/dev/null 2>&1; then
-    curl --insecure -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+    curl --insecure -L -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
 
     if [ "$?" -gt 0 ]; then
       echo -e "\nDownload Failed! - Check URL"
@@ -189,7 +189,7 @@ compare()
 {
   found=0
   tally=0
-  declare -a bad_hosts
+  declare -A bad_hosts
 
   echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${ORANGE}|${END}${BLUE}$PROG Results${END}${ORANGE}|${END} - ${BLUE}${FILE}${END}: ${ORANGE}$COUNT${END} total entries\n"
   while read bad_host
