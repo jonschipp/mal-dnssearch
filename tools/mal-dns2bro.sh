@@ -36,6 +36,9 @@ a single line by itself.
 	-n <boolean>	Call Notice Framework on matches, 'true/false' (def: false)
 	-s <name>	Name for data source (def: mal-dnssearch)
 	-u <url>	URL of feed (if applicable)
+	-d <desc>       meta.desc - 
+	-g <severity>   meta.cif_severity
+	-k <impact>	meta.cif_impact
 	-w <pattern>	Whitelist pattern (e.g. \`\`-w "192\.168"'', \`\`-w "bad|host|evil"''
 			Or set \$WHITELIST in your shell (e.g. \`\`export WHITELIST="you|get|clipped"'')
 
@@ -58,13 +61,13 @@ format() {
 
 	echo -e "\n[*] Waiting for input.. (Did you pipe stdin or specify a file?)\n" 1>&2
 
-awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN -v wlist=$WLIST 'BEGIN \
+awk -v type=$TYPE -v source=$SOURCE -v url=$URL -v notice=$NOTICE -v if_in=$IF_IN -v wlist=$WLIST -v desc=$DESC -v cif_severity=$CIF_SEVERITY -v cif_impact=$CIF_IMPACT 'BEGIN \
         {
-	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in\tmeta.whitelist"
+	       	print "#fields\tindicator\tindicator_type\tmeta.source\tmeta.url\tmeta.do_notice\tmeta.if_in\tmeta.whitelist\tmeta.desc\tmeta.cif_severity\tmeta.cif_impact"
 	}
 	{
-		$2=type; $3=source; $4=url; $5=notice; $6=if_in; $7=wlist;
-		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7;
+		$2=type; $3=source; $4=url; $5=notice; $6=if_in; $7=wlist; $8=desc; $9=cif_severity; $10=cif_impact;
+		print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8"\t"$9"\t"$10;
 	}'
 
 }
@@ -86,15 +89,24 @@ NOTICE="F"
 URL="-"
 IF_IN="-"
 WLIST="-"
+DESC="-"
+CIF_SEVERITY="-"
+CIF_IMPACT="-"
 ARGC=$#
 FILE_SET=0
 TYPE_SET=0
 
 argcheck 1
 
-while getopts "hf:i:n:T:s:u:w:" OPTION
+while getopts "hd:f:g:k:i:n:T:s:u:w:" OPTION
 do
      case $OPTION in
+	 g) CIF_SEVERITY="$OPTARG"
+	     ;;
+	 k) CIF_IMPACT="$OPTARG"
+	     ;;
+	 d) DESC="$OPTARG"
+	     ;;
          f)
 	     FILE="$OPTARG"
 	     FILE_SET=1
