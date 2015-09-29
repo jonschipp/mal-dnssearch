@@ -154,7 +154,7 @@ class mal_dns2bro:
     def __file(self):
         ret = None
         if self.args_dict['file'] is not None and len(self.args_dict['file']) > 0 and os.path.exists(self.args_dict['file']):
-            ret = self.args_dict['file']
+            ret = open(self.args_dict['file'], 'rb')
         else:
             ret = sys.stdin
         return ret
