@@ -1,26 +1,133 @@
 #!/usr/bin/python
 #
 # Aaron Eppert
-# September 2015
 #
 # September 28, 2015        Initial Release                             Aaron Eppert
 # September 29, 2015        Dynamic header creation and field filling   Aaron Eppert
-#
+# March 9, 2016             Added '-S' option to strip URIs and         Aaron Eppert
+#                           removed '-T' option so a mixed type file
+#                           may be supplied and heuristics generate the
+#                           required type
+
 import os
 import re
 import sys
 import string
+import socket
+from urlparse import urlparse
 
 from optparse import OptionParser, OptionGroup
 from optparse import HelpFormatter as fmt
 
 
+def warning(text):
+    sys.stderr.write("WARNING: %s\n" % (text))
+
+
+def error(text):
+    sys.stderr.write("ERROR: %s\n" % (text))
+    sys.exit(1)
+
+
 def decorate(fn):
     def wrapped(self=None, desc=""):
-        print 'here'
         return '\n'.join([fn(self, s).rstrip() for s in desc.split('\n')])
     return wrapped
 fmt.format_description = decorate(fmt.format_description)
+
+
+class bro_intel_indicator_type:
+    def __init__(self, strip_uri=False):
+        self.__INDICATOR_TYPE_unsupported = ['Intel::SOFTARE',
+                                             'Intel::USER_NAME',
+                                             'Intel::FILE_NAME',
+                                             'Intel::CERT_HASH']
+
+        self.__INDICATOR_TYPE_handler = [(self.__handle_intel_addr,      'Intel::ADDR'),
+                                         (self.__handle_intel_domain,    'Intel::DOMAIN'),
+                                         (self.__handle_intel_url,       'Intel::URL'),
+                                         (self.__handle_intel_email,     'Intel::EMAIL'),
+                                         (self.__handle_intel_file_hash, 'Intel::FILE_HASH')]
+
+    def __is_valid_ipv6_address(self, address):
+        try:
+            socket.inet_pton(socket.AF_INET6, address)
+        except socket.error:  # not a valid address
+            return False
+        return True
+
+    def __is_valid_ipv4_address(self, address):
+        try:
+            socket.inet_pton(socket.AF_INET, address)
+        except AttributeError:  # no inet_pton here, sorry
+            try:
+                socket.inet_aton(address)
+            except socket.error:
+                return False
+            return address.count('.') == 3
+        except socket.error:  # not a valid address
+            return False
+        return True
+
+    def __handle_intel_addr(self, indicator):
+        ret = (False, None)
+        if self.__is_valid_ipv4_address(indicator) or self.__is_valid_ipv6_address(indicator):
+            ret = (True, 'Intel::ADDR')
+        return ret
+
+    # We will call this minimalist, but effective.
+    def __handle_intel_url(self, indicator):
+        ret = (False, None)
+
+        t_uri_present = re.findall(r'^https?://', indicator)
+        if t_uri_present is not None and len(t_uri_present) > 0:
+            error('Aborting - URI present (e.g. http(s)://) - %s' % (indicator))
+        else:
+            rx = re.compile(r'^[https?://]?'  # http:// or https://
+                            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+                            r'localhost|'  # localhost...
+                            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+                            r'(?::\d+)?'  # optional port
+                            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+            t = rx.search(indicator)
+            if t:
+                ret = (True, 'Intel::URL')
+        return ret
+
+    def __handle_intel_email(self, indicator):
+        ret = (False, None)
+        rx = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        t_email = re.findall(rx, indicator)
+        if len(t_email) > 0:
+            ret = (True, 'Intel::EMAIL')
+        return ret
+
+    def __handle_intel_domain(self, indicator):
+        ret = (False, None)
+        rx = r'(?=^.{4,253}$)(^((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$)'
+        t_domain = re.findall(rx, indicator)
+        if len(t_domain) > 0:
+            if indicator in t_domain[0]:
+                ret = (True, 'Intel::DOMAIN')
+        return ret
+
+    # Pretty weak, but should suffice for now.
+    def __handle_intel_file_hash(self, indicator):
+        ret = (False, None)
+        VALID_HASH_LEN = {32: 'md5',
+                          40: 'sha1',
+                          64: 'sha256'}
+        if VALID_HASH_LEN.get(len(indicator), None):
+            ret = (True, 'Intel::FILE_HASH')
+        return ret
+
+    def determine(self, indicator):
+        for ith in self.__INDICATOR_TYPE_handler:
+            (t_okay, t_val) = ith[0](indicator)
+
+            if t_okay:
+                return t_val
+        error("Could not determine indicator type for %s" % (indicator))
 
 
 class mal_dns2bro:
@@ -28,17 +135,8 @@ class mal_dns2bro:
         self.args_dict = args_dict
         self.append_intel_line = None
         self.sorted_hdr = [(0, '#fields',   None),
-                           (1, 'indicator', None)]
-
-        self.s2l_types = {'ip':        'Intel::ADDR',
-                          'domain':    'Intel::DOMAIN',
-                          'url':       'Intel::URL',
-                          'software':  'Intel::SOFTWARE',
-                          'e-mail':    'Intel::EMAIL',
-                          'user':      'Intel::USER_NAME',
-                          'filehash':  'Intel::FILE_HASH',
-                          'filename':  'Intel::FILE_NAME',
-                          'certhash':  'Intel::CERT_HASH'}
+                           (1, 'indicator', None),
+                           (2, 'indicator_type',      None)]
 
         self.if_in = ['-',
                       'Conn::IN_ORIG',
@@ -65,9 +163,11 @@ class mal_dns2bro:
                       'SSL::IN_SERVER_NAME',
                       'SMTP::IN_HEADER']
 
-        self.option_to_header = [('#fields',         '#fields',             lambda : None),
-                                 ('indicator',       'indicator',           lambda : None),
-                                 ('type',            'indicator_type',      self.__type),
+        self._bitt = bro_intel_indicator_type()
+
+        self.option_to_header = [('#fields',         '#fields',             lambda: None),
+                                 ('indicator',       'indicator',           lambda: None),
+                                 ('type',            'indicator_type',      lambda: None),
                                  ('source',          'meta.source',         self.__source),
                                  ('url',             'meta.url',            self.__url),
                                  ('notice',          'meta.do_notice',      self.__notice),
@@ -86,8 +186,7 @@ class mal_dns2bro:
         try:
             ret = map(lambda x: x[0], self.option_to_header).index(t)
         except ValueError:
-            print 'ERROR: Invalid header!'
-            sys.exit(1)
+            error('Invalid header!')
         return ret
 
     def __cif_severity(self):
@@ -130,18 +229,6 @@ class mal_dns2bro:
         if self.args_dict['notice'] is not None and _to_bro.get(self.args_dict['notice'], None) is not None:
             ret = _to_bro.get(self.args_dict['notice'])
         return (self.__find_header_order('notice'), ret)
-
-    def __type(self):
-        ret = ''
-        if self.args_dict['type'] is not None:
-            if self.args_dict['type'] in self.s2l_types.keys():
-                ret = self.s2l_types[self.args_dict['type']]
-            elif self.args_dict['type'] in self.s2l_types.values():
-                ret = self.args_dict['type']
-            else:
-                sys.stderr.write('ERROR: TYPE not specified!\n')
-                sys.exit(1)
-        return (self.__find_header_order('type'), ret)
 
     def __source(self):
         ret = ''
@@ -194,9 +281,9 @@ class mal_dns2bro:
         return ret
 
     def __prep_append_intel_line(self):
-        self.append_intel_line = '\t'.join([t[2]()[1] for t in self.sorted_hdr[2:]])
+        self.append_intel_line = '\t'.join([t[2]()[1] for t in self.sorted_hdr[3:]])
 
-    def __gen_header(self):
+    def __put_header(self):
         ret = ''
         t_args_dict_to_field_name = map(lambda x: x[0], self.option_to_header)
         for k in self.args_dict.keys():
@@ -211,23 +298,52 @@ class mal_dns2bro:
             self.sorted_hdr.sort(key=lambda x: x[0])
             ret = '\t'.join(map(lambda x: x[1], self.sorted_hdr))
         else:
-            sys.stderr.write('ERROR: Failed to generate header')
-            sys.exit(1)
+            error('Failed to generate header')
+        sys.stdout.write(ret + "\n")
+
+    def __strip_uri(self, line):
+        ret = ''
+        parsed = urlparse(line)
+
+        if len(parsed) > 0:
+            if parsed.netloc:
+                ret += parsed.netloc
+            if parsed.path:
+                ret += parsed.path
+            if parsed.params:
+                ret += ";" + parsed.params
+            if parsed.query:
+                ret += '?' + parsed.query
+            if parsed.fragment:
+                ret += '#' + parsed.fragment
+        return ret
+
+    def __type(self, line):
+        ret = self._bitt.determine(line)
         return ret
 
     def format(self):
         t_fd = self.__file()
+
         if t_fd is not None:
-            print self.__gen_header()
+            self.__put_header()
             self.__prep_append_intel_line()
 
             for line in t_fd:
                 t_line = line.strip()
                 if len(t_line) > 0:
-                    print '%s\t%s' % (t_line, self.append_intel_line)
+                    if self.args_dict['strip_uri']:
+                        t_line = self.__strip_uri(t_line)
+
+                    # Special case, we need to generate the indicator_type
+                    # based on the input data
+                    t_type = self.__type(t_line)
+
+                    print '%s\t%s\t%s' % (t_line, t_type, self.append_intel_line)
 
             if t_fd is not sys.stdin:
                 t_fd.close()
+
 
 def main():
     parser = OptionParser()
@@ -241,16 +357,7 @@ def main():
                                                    true
                                                    false
                                                    (def: false)""")
-    parser.add_option('-T', dest='type', help="""Intel::Type value or short name:
-                                            Intel::ADDR\t\t->\tip
-                                            Intel::DOMAIN\t->\tdns
-                                            Intel::URL\t\t->\turl
-                                            Intel::SOFTWARE\t->\tsoftware
-                                            Intel::EMAIL\t->\te-mail
-                                            Intel::USER_NAME\t->\tuser
-                                            Intel::FILE_HASH\t->\tfilehash
-                                            Intel::FILE_NAME\t->\tfilename
-                                            Intel::CERT_HASH\t->\tcerthash""")
+    parser.add_option('-S', dest='strip_uri', help='Strip URI(s) if present')
     parser.add_option('-s', dest='source', help='Name for data source (def: mal-dnssearch)')
     parser.add_option('-u', dest='url', help='URL of feed (if applicable)')
     parser.add_option('-w', dest='whitelist', help="""Whitelist pattern (e.g. -w "192\.168", -w "bad|host|evil")""")
