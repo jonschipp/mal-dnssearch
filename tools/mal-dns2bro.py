@@ -134,9 +134,9 @@ class mal_dns2bro:
     def __init__(self, args_dict):
         self.args_dict = args_dict
         self.append_intel_line = None
-        self.sorted_hdr = [(0, '#fields',   None),
-                           (1, 'indicator', None),
-                           (2, 'indicator_type',      None)]
+        self.sorted_hdr = [(0, '#fields',           None),
+                           (1, 'indicator',         None),
+                           (2, 'indicator_type',    None)]
 
         self.if_in = ['-',
                       'Conn::IN_ORIG',
@@ -357,7 +357,7 @@ def main():
                                                    true
                                                    false
                                                    (def: false)""")
-    parser.add_option('-S', dest='strip_uri', help='Strip URI(s) if present')
+    parser.add_option('-S', dest='strip_uri', action="store_true", help='Strip URI(s) if present')
     parser.add_option('-s', dest='source', help='Name for data source (def: mal-dnssearch)')
     parser.add_option('-u', dest='url', help='URL of feed (if applicable)')
     parser.add_option('-w', dest='whitelist', help="""Whitelist pattern (e.g. -w "192\.168", -w "bad|host|evil")""")
