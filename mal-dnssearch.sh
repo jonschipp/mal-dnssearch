@@ -466,10 +466,10 @@ fi
 
 if [[ $APACHE = 1 ]]; then
   PROG="Apache Log File"; COUNT=$(wc -l < $FILE)
-  compare "cat \$FILE | awk  '{print $1}' | $(eval wlistchk) | unique"
+  compare "awk '{ print $1 }' < \$FILE | $(eval wlistchk) | unique"
 fi
 
 if [[ $APACHEV = 1 ]]; then
   PROG="Apache Log File"; COUNT=$(wc -l < $FILE)
-  compare "cat \$FILE | awk  '{print $2}' | $(eval wlistchk) | unique"
+  compare "awk '{ print $2 }' < \$FILE | $(eval wlistchk) | unique"
 fi
