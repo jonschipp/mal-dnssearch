@@ -34,8 +34,8 @@ Type:      |    Description:
 argus      |    ARGUS file (requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN)
 bind       |    ISC's BIND query log file
 bro        |    BRO-IDS dns.log file
-custom|ip  -    Custom file - IP addresses, one per line.
-custom|dns -    Custom file - DNS (with one DNS name per line w/o trailing FQDN dot)
+custom-ip  |	Custom file - IP addresses, one per line.
+custom-dns |	Custom file - DNS (with one DNS name per line w/o trailing FQDN dot)
 hosts      |    /etc/hosts file
 httpry     |    HttPry log file
 passivedns |    PassiveDNS log file
