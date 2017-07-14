@@ -223,6 +223,7 @@ LOG_SET=0
 FILE_SET=0
 PIPE=0
 DNS=0
+APACHE=0
 ARGUS=0
 BIND=0
 BRODNS=0
@@ -327,7 +328,9 @@ case $OPTION in
    PIPE=1
    ;;
   T)
-   if [[ "$OPTARG" == argus ]]; then
+   if [[ "$OPTARG" == apache ]]; then
+     APACHE=1
+   elif [[ "$OPTARG" == argus ]]; then
      ARGUS=1
    elif [[ "$OPTARG" == bind ]]; then
      BIND=1
@@ -454,4 +457,9 @@ if [[ $CUSTOMIP = 1 ]]; then
   parse
   PROG="Custom IP File"; COUNT=$(wc -l < $FILE)
   compare "cat $FILE | $(eval wlistchk) | unique"
+fi
+
+if [[ $APACHE = 1 ]]; then
+  PROG="Apache Log File"; COUNT=$(wc -l < $FILE)
+  compare "cat \$FILE | awk  '{print $2}' | $(eval wlistchk) | unique"
 fi
