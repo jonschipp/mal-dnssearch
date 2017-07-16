@@ -36,6 +36,8 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 	-f <file>	Log file e.g. \`\`-f /opt/bro/logs/current/dns.log''
 
         Type:      |    Description:
+	apache     -	Apache access log
+	apachev    -	Apache vhosts access log
 	argus 	   - 	ARGUS file
 	bind       -    ISC's BIND query log file
         bro-dns    - 	BRO-IDS dns.log file
@@ -223,6 +225,8 @@ LOG_SET=0
 FILE_SET=0
 PIPE=0
 DNS=0
+APACHE=0
+APACHEV=0
 ARGUS=0
 BIND=0
 BRODNS=0
@@ -327,7 +331,11 @@ case $OPTION in
    PIPE=1
    ;;
   T)
-   if [[ "$OPTARG" == argus ]]; then
+   if [[ "$OPTARG" == apache ]]; then
+     APACHE=1
+   elif [[ "$OPTARG" == apachev ]]; then
+     APACHEV=1
+   elif [[ "$OPTARG" == argus ]]; then
      ARGUS=1
    elif [[ "$OPTARG" == bind ]]; then
      BIND=1
@@ -454,4 +462,14 @@ if [[ $CUSTOMIP = 1 ]]; then
   parse
   PROG="Custom IP File"; COUNT=$(wc -l < $FILE)
   compare "cat $FILE | $(eval wlistchk) | unique"
+fi
+
+if [[ $APACHE = 1 ]]; then
+  PROG="Apache Log File"; COUNT=$(wc -l < $FILE)
+  compare "awk '{ print $1 }' < \$FILE | $(eval wlistchk) | unique"
+fi
+
+if [[ $APACHEV = 1 ]]; then
+  PROG="Apache Log File"; COUNT=$(wc -l < $FILE)
+  compare "awk '{ print $2 }' < \$FILE | $(eval wlistchk) | unique"
 fi

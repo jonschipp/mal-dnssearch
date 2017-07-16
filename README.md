@@ -31,6 +31,8 @@ Specify log type with `-T <type>`. This is used to parse the file correctly. <br
 
 Type:      |    Description:
 -----------|----------------
+apache     |	Apache Access Log
+apachev    |	Apache Other Vhosts Access Log
 argus      |    ARGUS file (requires user data i.e. setting ARGUS_CAPTURE_DATA_LEN)
 bind       |    ISC's BIND query log file
 bro        |    BRO-IDS dns.log file
@@ -118,6 +120,7 @@ Usage: ./mal-dnssearch -T <type> -f <logfile> [-M <list>] [-w whitelist] [-l out
 ./mal-dnssearch.sh -T argus -f dns.argus -M malhosts -F iptables -l dns.results.log
 ./mal-dnssearch.sh -T custom-ip -f iplist.log -M snort -l ip.results.log -N -v
 ./mal-dnssearch.sh -T custom-ip -f iplist.log -M mandiant -l ip.results.log
+./mal-dnssearch.sh -T apache -f /var/log/apache2/access.log
 ```
 
 ## Author:
