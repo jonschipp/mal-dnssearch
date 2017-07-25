@@ -69,7 +69,8 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
       Processing Options:
 	-h      help (this message)
 	-F      insert firewall rules (blocks) e.g. iptables,pf,ipfw
-        -l      Log stdout & stderr to <file>
+	-G	Perform GeoIP lookup for reportedly malicious IPs
+	-l      Log stdout & stderr to <file>
 	-N 	Skip file download
 	-p 	Print parsed mal-ware list to stdout e.g. \`\`-M ciarmy -p | prog''
 	-v	Verbose, print each line line from malware list
@@ -202,7 +203,17 @@ compare()
   do
     [[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
     if [[ ${bad_hosts[$host]} ]]; then
-      echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
+      if [[ "$GEO" = "1" ]]; then
+        if command -v geoiplookup >/dev/null 2>&1; then
+          #$GEORESULT="$(geoiplookup $host | sed -n 1p | sed -e 's/GeoIP Country Edition://g')"
+	  echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches, and is located in$(geoiplookup $host | sed -n 1p | sed -e 's/GeoIP Country Edition://g' | sed 's/.*,//')"
+        else
+	  echo -e "geoiplookup not available! Install geoip-bin."
+	  exit 1
+      fi
+      else
+        echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
+      fi
       let found++
       [[ "$FWTRUE" = "1" ]] && ipblock
     fi
@@ -223,6 +234,7 @@ LOG_SET=0
 FILE_SET=0
 PIPE=0
 DNS=0
+GEO=0
 ARGUS=0
 BIND=0
 BRODNS=0
@@ -250,7 +262,7 @@ WHITE="$(tput setaf 7)"
 bash_check
 
 # option and argument handling
-while getopts "hf:F:l:pM:NT:vVw:" OPTION
+while getopts "hf:F:Gl:pM:NT:vVw:" OPTION
 do
 case $OPTION in
   F)
@@ -260,6 +272,9 @@ case $OPTION in
   f)
     FILE="$OPTARG"
     FILE_SET=1
+    ;;
+  G)
+    GEO=1
     ;;
   h)
     usage
