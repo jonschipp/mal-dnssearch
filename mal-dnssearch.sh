@@ -204,9 +204,13 @@ compare()
     [[ ${VERBOSELOG:-0} -eq 1 ]] && echo "---log: $host"
     if [[ ${bad_hosts[$host]} ]]; then
       if [[ "$GEO" = "1" ]]; then
-        $GEORESULT="$(geoiplookup $host | sed -e 's/GeoIP Country Edition://g')"
-	echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches, country is$GEORESULT"
-
+        if command -v geoiplookup >/dev/null 2>&1; then
+          $GEORESULT="$(geoiplookup $host | sed -e 's/GeoIP Country Edition://g')"
+	  echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches, country is$GEORESULT"
+        else
+	  echo -e "geoiplookup not available! Install geoip-bin."
+	  exit 1
+      fi
       else
         echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches "
       fi
