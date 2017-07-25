@@ -205,8 +205,8 @@ compare()
     if [[ ${bad_hosts[$host]} ]]; then
       if [[ "$GEO" = "1" ]]; then
         if command -v geoiplookup >/dev/null 2>&1; then
-          $GEORESULT="$(geoiplookup $host | sed -e 's/GeoIP Country Edition://g')"
-	  echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches, country is$GEORESULT"
+          #$GEORESULT="$(geoiplookup $host | sed -n 1p | sed -e 's/GeoIP Country Edition://g')"
+	  echo -e "${ORANGE}[${END}${RED}+${END}${ORANGE}]${END} ${RED}Found${END} - host '"${ORANGE}$host${END}"' matches, and is located in$(geoiplookup $host | sed -n 1p | sed -e 's/GeoIP Country Edition://g' | sed 's/.*,//')"
         else
 	  echo -e "geoiplookup not available! Install geoip-bin."
 	  exit 1
