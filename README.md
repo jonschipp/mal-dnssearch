@@ -49,7 +49,7 @@ Is your log not supported? E-mail me a sample, I'll add it.
 
 ## Supported Malware Host Lists:
 
-Default is `http://secure.mayhemiclabs.com/malhosts/malhosts.txt` (DNS list) when
+Default is `https://netapi.com/api2/?method=compromised&dataset_type=url&header=0` (DNS list) when
 `-M` is not specified.
 
 List:      |     Description:
@@ -66,6 +66,8 @@ malips     |     http://www.malwaredomainlist.com/hostslist/ip.txt (IP)
 ciarmy     |     http://www.ciarmy.com/list/ci-badguys.txt (IP)
 mayhemic   |     http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
 mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
+netapi_ips |     https://netapi.com/api2/?method=compromised&dataset_type=ip&header=0 (IP)
+netapi_dns |     https://netapi.com/api2/?method=compromised&dataset_type=url&header=0 (DNS)
 
 #### Todo (not ranked):
 
@@ -100,7 +102,7 @@ mandiant   | 	 https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_ap
 `-F` block matched hosts w/ firewall, 3 available: iptables, pf, ipfw *e.g.* `-F pf` <br>
 `-N` skip file download <br>
 `-p` Pass downloaded file to stdout to pipe to other programs *e.g.* <br>
-	`-M mayhemic -p | mal-dns2bro -T dns > mayhemic.intel` <br>
+	`-M netapi_dns -p | mal-dns2bro -T dns > netapi.intel` <br>
 `-v` Print line from mal-host list as its processed for debugging <br>
 `-V` Print each line from the log file as its processed for debugging <br>
 

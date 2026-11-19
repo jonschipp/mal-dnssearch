@@ -29,7 +29,7 @@ usage()
 cat <<EOF
 
 Compare DNS/IP logs against known mal-ware host lists.
-Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
+Default mal-list: https://netapi.com/api2/?method=compromised&dataset_type=url&header=0
 
      Log File Options:
         -T <type>	Type(s) of log e.g. \`\`-T bro''
@@ -67,6 +67,8 @@ Default mal-list: http://secure.mayhemiclabs.com/malhosts/malhosts.txt
 	ciarmy 	   -     http://www.ciarmy.com/list/ci-badguys.txt (IP)
 	mayhemic   -     http://secure.mayhemiclabs.com/malhosts/malhosts.txt (DNS)
         mandiant   -     https://raw.github.com/jonschipp/mal-dnssearch/master/mandiant_apt1.dns (DNS)
+	netapi_ips -     https://netapi.com/api2/?method=compromised&dataset_type=ip&header=0 (IP)
+	netapi_dns -     https://netapi.com/api2/?method=compromised&dataset_type=url&header=0 (DNS)
 
       Processing Options:
 	-h      help (this message)
@@ -93,7 +95,7 @@ download()
   if [ "$DOWNLOAD" != "NO" ]; then
   echo -e "\n${ORANGE}[${END}${RED}*${END}${ORANGE}]${END} ${BLUE}Downloading ${MALHOSTURL:-$MALHOSTDEFAULT}...${END}\n" 1>&2
   if command -v curl >/dev/null 2>&1; then
-    curl --insecure -L -O ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+    curl --insecure -L -o "${MALHOSTFILE:-$MALFILEDEFAULT}" "${MALHOSTURL:-$MALHOSTDEFAULT}" 1>/dev/null
 
     if [ "$?" -gt 0 ]; then
       echo -e "\nDownload Failed! - Check URL"
@@ -101,7 +103,7 @@ download()
     fi
 
   elif command -v wget >/dev/null 2>&1; then
-    wget --no-check-certificate ${MALHOSTURL:-$MALHOSTDEFAULT} 1>/dev/null
+    wget --no-check-certificate -O "${MALHOSTFILE:-$MALFILEDEFAULT}" "${MALHOSTURL:-$MALHOSTDEFAULT}" 1>/dev/null
 
     if [ "$?" -gt 0 ]; then
       echo -e "\nDownload Failed! - Check URL"
@@ -154,7 +156,7 @@ parse()
       { rm $MALHOSTFILE && tr -d '\r' | sed -e '/^#/d' -e '/^$/d' | awk '{ print $2 }' > $MALHOSTFILE; } < $MALHOSTFILE
     fi
   fi
-  if [[ "$PARSE" = "malips" ]] || [[ "$PARSE" = "mandiant" ]]; then
+  if [[ "$PARSE" = "malips" ]] || [[ "$PARSE" = "mandiant" ]] || [[ "$PARSE" = "netapi_ips" ]] || [[ "$PARSE" = "netapi_dns" ]]; then
     { rm $MALHOSTFILE && sed -e '/^$/d' -e '/^#/d' | tr -d '\r' > $MALHOSTFILE; } < $MALHOSTFILE
   fi
 
@@ -314,6 +316,15 @@ case $OPTION in
      MALHOSTFILE="mandiant_apt1.dns"
      PARSE="$OPTARG"
      DNS=1
+   elif [[ "$OPTARG" == netapi_ips ]]; then
+     MALHOSTURL="https://netapi.com/api2/?method=compromised&dataset_type=ip&header=0"
+     MALHOSTFILE="netapi-ips.txt"
+     PARSE="$OPTARG"
+   elif [[ "$OPTARG" == netapi_dns ]]; then
+     MALHOSTURL="https://netapi.com/api2/?method=compromised&dataset_type=url&header=0"
+     MALHOSTFILE="netapi-domains.txt"
+     PARSE="$OPTARG"
+     DNS=1
    elif [[ "$OPTARG" == mayhemic ]]; then
      MALHOSTURL="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
      MALHOSTFILE="malhosts.txt"
@@ -392,8 +403,8 @@ fi
 echo -e "\n${BLUE}PID${END}: ${ORANGE}$$${END}" 1>&2
 
 # vars
-MALHOSTDEFAULT="http://secure.mayhemiclabs.com/malhosts/malhosts.txt"
-MALFILEDEFAULT="malhosts.txt"
+MALHOSTDEFAULT="https://netapi.com/api2/?method=compromised&dataset_type=url&header=0"
+MALFILEDEFAULT="netapi-domains.txt"
 
 download
 parse
